@@ -1,6 +1,6 @@
 import numpy as np
 from reactor import Reactor
-from ship import Ship
+from ship import Ship, PoweredShip
 
 def init_reactor_from_file(filename):
     file = np.loadtxt(filename, delimiter=';',dtype=str)
@@ -8,7 +8,9 @@ def init_reactor_from_file(filename):
     return Reactor(power,burnup,enrichment,name)
 
 def init_ship_from_file(filename):
-    return
+    file = np.loadtxt(filename, delimiter=';',dtype=str)
+    propulsion,auxiliary,avg_speed,op_time,portcalls,name = file[1,1].astype(float),file[1,2].astype(float),file[1,3].astype(float),file[1,4].astype(float),file[1,5].astype(float),file[1,0]
+    return Ship(propulsion,auxiliary,avg_speed,op_time,portcalls,name)
 
 Allseas = init_reactor_from_file("inputs/reactor_allseas.txt")
 print(Allseas)
