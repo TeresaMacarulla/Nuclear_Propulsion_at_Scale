@@ -1,2 +1,2 @@
-name;propulsion[MW],auxiliary[MW],avg_speed[knots],op_time[h],portcalls
-Container; ;;;
+name;propulsion[MW];auxiliary[MW];avg_speed[knots];op_time[h];portcalls
+Panamax container;46;4;20;2700;40

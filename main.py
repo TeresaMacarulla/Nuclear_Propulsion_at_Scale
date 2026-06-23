@@ -12,5 +12,17 @@ def init_ship_from_file(filename):
     propulsion,auxiliary,avg_speed,op_time,portcalls,name = file[1,1].astype(float),file[1,2].astype(float),file[1,3].astype(float),file[1,4].astype(float),file[1,5].astype(float),file[1,0]
     return Ship(propulsion,auxiliary,avg_speed,op_time,portcalls,name)
 
-Allseas = init_reactor_from_file("inputs/reactor_allseas.txt")
-print(Allseas)
+def init_powered_ship_from_files(shipfilename,reactorfilename):
+    shipfile = np.loadtxt(shipfilename, delimiter=';',dtype=str)
+    reactorfile = np.loadtxt(reactorfilename, delimiter=';',dtype=str)
+    power,burnup,enrichment,reactorname = reactorfile[1,1].astype(float),reactorfile[1,2].astype(float),reactorfile[1,3].astype(float),reactorfile[1,0]
+    propulsion,auxiliary,avg_speed,op_time,portcalls,shipname = shipfile[1,1].astype(float),shipfile[1,2].astype(float),shipfile[1,3].astype(float),shipfile[1,4].astype(float),shipfile[1,5].astype(float),shipfile[1,0]
+    return PoweredShip(propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,power,burnup,enrichment,reactorname)
+
+# Test: Panamax containership with Allseas SMR
+#Allseas = init_reactor_from_file("inputs/reactor_allseas.txt")
+#PanamaxContainer = init_ship_from_file("inputs/ship_container.txt")
+PoweredPanamaxContainer = init_powered_ship_from_files("inputs/ship_container.txt","inputs/reactor_allseas.txt")
+# increase number of ships:
+PoweredPanamaxContainer.set_number(18)
+print(PoweredPanamaxContainer)

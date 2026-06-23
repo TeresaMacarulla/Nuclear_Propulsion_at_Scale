@@ -5,22 +5,30 @@ class Ship:
         self.avg_speed = avg_speed
         self.op_time = op_time
         self.portcalls = portcalls
-        self.name = name
+        self.shipname = name
     def __str__(self):
         return (
-            f"=== {self.name} ship characteristics ===\n"
+            f"=== {self.shipname} ship characteristics ===\n"
             f"Installed propulsion power: {self.propulsion} MW\n"
             f"Installed auxiliary power:  {self.auxiliary} MW\n"
             f"Average speed:  {self.avg_speed} knots\n"
             f"Operational time:    {self.op_time} hours\n"
-            f"Number of portcalls per year:  {self.portcalls}"
+            f"Number of portcalls per year:  {self.portcalls}\n"
         )    
 from reactor import Reactor   
-import math 
+import math
 class PoweredShip(Ship,Reactor):
+    def __init__(self,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,power,burnup,enrichment,reactorname):
+        Ship.__init__(self,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname) 
+        Reactor.__init__(self,power,burnup,enrichment,reactorname)
+        self.reactornumber = math.ceil((self.propulsion+self.auxiliary)*1.0/self.power) # divide ship power demand by reactor power supply and round up to nearest integer to find number of reactor modules needed
+        self.shipnumber = 1
+        self.total_reactornumber = self.shipnumber*self.reactornumber
+
     # set number of combinations of ship and reactor
-    def __init__(self):
-        super().__init__() # inherit from parents
-        self.reactor_number = math.ceil((self.propulsion+self.power)*1.0/self.power) # divide ship power demand by reactor power supply and round up to nearest integer to find number of reactor modules needed
-    def set_number(self,number):
-        self.number = number
+    def set_number(self,number): # set number of ships of this type
+        self.shipnumber = number
+        self.total_reactornumber = self.shipnumber*self.reactornumber
+    
+    def __str__(self):
+        return f"{self.shipnumber} {self.shipname} ship(s) with {self.reactornumber} {self.reactorname} reactors each\n"+Ship.__str__(self)+Reactor.__str__(self)
