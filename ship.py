@@ -23,4 +23,4 @@ class PoweredShip(Ship,Reactor):
         super().__init__() # inherit from parents
         self.reactor_number = math.ceil((self.propulsion+self.power)*1.0/self.power) # divide ship power demand by reactor power supply and round up to nearest integer to find number of reactor modules needed
     def set_number(self,number):
-        return self.number
+        self.number = number
