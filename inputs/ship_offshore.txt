@@ -1,2 +1,2 @@
-name;propulsion[MW],auxiliary[MW],avg_speed[knots],op_time[h],portcalls
-Offshore vessel;;;;
+name;installed_P[MWe];propulsion[MW];auxiliary[MW];avg_speed[knots];op_time[h];portcalls
+Offshore vessel;25;;;;2350;
