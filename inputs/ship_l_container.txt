@@ -1,2 +1,2 @@
 name;installed_P[MWe];propulsion[MW];auxiliary[MW];avg_speed[knots];op_time[h];portcalls
-Large container;75;;;;2700;40
+Large container;75;63.8;11.3;13;2700;50
