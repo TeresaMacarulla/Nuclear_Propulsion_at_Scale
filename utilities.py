@@ -38,9 +38,56 @@ def fuelmass_from_burnup(power,time,burnup):
     """
     return power*time/(burnup*1e+3)
 
+def feedmass(fuelmass,enrichment,tail_assay,feed_assay):
+    """
+    Calculate the required feed mass to produce a given fuel mass with given enrichment, with given tail and feed mass assays.
+
+    Parameters
+    ----------
+    fuelmass : float
+        Mass of enriched uranium fuel [kg].
+    enrichment : float
+        The enrichment of the uranium fuel [decimal].
+    tail_assay : float
+        Mass assay of tail [decimal].
+    feed_assay : float
+        Mass assay of feed [decimal].
+    Returns
+    -------
+    float
+        Feed mass [kg].
+    """
+
+    return fuelmass*(enrichment-tail_assay)/(feed_assay-tail_assay)
+
+def SW(fuelmass,enrichment,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2): # assume 0.4% tail assay and natural uranium feed for now
+    """
+    Calculate the separative work needed to produce a certain mass of enriched uranium from natural uranium.
+
+    Parameters
+    ----------
+    fuelmass : float
+        Mass of enriched uranium fuel [kg].
+    enrichment : float
+        The enrichment of the uranium fuel [decimal].
+    tail_assay : float
+        Mass assay of tail [decimal].
+    feed_assay : float
+        Mass assay of feed [decimal].
+    Returns
+    -------
+    float
+        Separative work [SWU].
+    """
+    F =feedmass(fuelmass,enrichment,tail_assay,feed_assay)
+    W  = F-fuelmass
+    return fuelmass*(1-2*enrichment)*np.log((1-enrichment)/enrichment)+W*(1-2*tail_assay)*np.log((1-tail_assay)/tail_assay)-F*(1-2*feed_assay)*np.log((1-feed_assay)/feed_assay)
+
 class FuelNeeds:
-    def __init__(self,fuel_throughput):
+    def __init__(self,fuel_throughput,swu,N_years):
         self.fuel_throughput = fuel_throughput
+        self.swu = swu
+        self.N_years = N_years
 class InfrastructureNeeds:
     def __init__(self):
         pass
