@@ -1,23 +1,7 @@
 import numpy as np
 from reactor import Reactor
 from ship import Ship, PoweredShip
-
-def init_reactor_from_file(filename):
-    file = np.loadtxt(filename, delimiter=';',dtype=str)
-    power,burnup,enrichment,name = file[1,1].astype(float),file[1,2].astype(float),file[1,3].astype(float),file[1,0]
-    return Reactor(power,burnup,enrichment,name)
-
-def init_ship_from_file(filename):
-    file = np.loadtxt(filename, delimiter=';',dtype=str)
-    propulsion,auxiliary,avg_speed,op_time,portcalls,name = file[1,1].astype(float),file[1,2].astype(float),file[1,3].astype(float),file[1,4].astype(float),file[1,5].astype(float),file[1,0]
-    return Ship(propulsion,auxiliary,avg_speed,op_time,portcalls,name)
-
-def init_powered_ship_from_files(shipfilename,reactorfilename):
-    shipfile = np.loadtxt(shipfilename, delimiter=';',dtype=str)
-    reactorfile = np.loadtxt(reactorfilename, delimiter=';',dtype=str)
-    power,burnup,enrichment,reactorname = reactorfile[1,1].astype(float),reactorfile[1,2].astype(float),reactorfile[1,3].astype(float),reactorfile[1,0]
-    propulsion,auxiliary,avg_speed,op_time,portcalls,shipname = shipfile[1,1].astype(float),shipfile[1,2].astype(float),shipfile[1,3].astype(float),shipfile[1,4].astype(float),shipfile[1,5].astype(float),shipfile[1,0]
-    return PoweredShip(propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,power,burnup,enrichment,reactorname)
+from utilities import *
 
 # Test: Panamax containership with Allseas SMR
 #Allseas = init_reactor_from_file("inputs/reactor_allseas.txt")
@@ -26,3 +10,23 @@ PoweredPanamaxContainer = init_powered_ship_from_files("inputs/ship_container.tx
 # increase number of ships:
 PoweredPanamaxContainer.set_number(18)
 print(PoweredPanamaxContainer)
+def model(powered_ship):
+    """
+    Main function for calculating model outputs for a single year.
+
+    Parameters
+    ----------
+    powered_ship : instance of PoweredShip class
+        The input paramaters for the ship and reactor.
+
+    Returns
+    -------
+    instance of FuelNeeds class
+        Fuel related outputs.
+    
+    instance of InfrastructureNeeds class
+        Infrastructure related outputs.
+    """
+    N_years = 5 # years between refuelings. Should maybe add as variable in Ship class instead
+    fuel_throughput  = fuelmass_from_burnup(powered_ship.power,powered_ship.op_time/24*N_years,powered_ship.burnup)
+    return FuelNeeds(fuel_throughput),InfrastructureNeeds()
