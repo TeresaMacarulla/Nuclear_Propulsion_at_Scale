@@ -10,14 +10,14 @@ PoweredPanamaxContainer = init_powered_ship_from_files("inputs/ship_container.tx
 # increase number of ships:
 PoweredPanamaxContainer.set_number(18)
 print(PoweredPanamaxContainer)
-def model(powered_ship):
+def model(powered_ships):
     """
     Main function for calculating model outputs for a single year.
 
     Parameters
     ----------
-    powered_ship : instance of PoweredShip class
-        The input paramaters for the ship and reactor.
+    powered_ships : list of instances of PoweredShip class
+        The input paramaters for the different combinations of ship and reactor.
 
     Returns
     -------
@@ -28,5 +28,7 @@ def model(powered_ship):
         Infrastructure related outputs.
     """
     N_years = 5 # years between refuelings. Should maybe add as variable in Ship class instead
-    fuel_throughput  = fuelmass_from_burnup(powered_ship.power,powered_ship.op_time/24*N_years,powered_ship.burnup)
+    fuel_throughput  = 0.0
+    for powered_ship in powered_ships:
+        fuel_throughput  += fuelmass_from_burnup(powered_ship.power,powered_ship.op_time/24*N_years,powered_ship.burnup)*powered_ship.total_reactornumber
     return FuelNeeds(fuel_throughput),InfrastructureNeeds()
