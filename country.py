@@ -8,24 +8,24 @@ class Country:
 
     def __init__(
         self,
-        name,
-        iso3,
-        region,
-        nuclear_port_capable,
-        nuclear_port_count,
-        route_relevance,
-        uranium_mining,
-        uranium_conversion,
-        enrichment,
-        fuel_fabrication,
-        reactor_fabrication,
-        waste_management,
-        uranium_production_tU_per_year,
-        conversion_capacity_tU_per_year,
-        enrichment_capacity_SWU_per_year,
-        fuel_fabrication_capacity_tHM_per_year,
-        reactor_fabrication_capacity_units_per_year,
-        notes="",
+        name, # Country name, e.g. "France", "Norway", "Canada"
+        iso3, # Three-letter ISO country code, e.g. "FRA", "NOR", "CAN"
+        region, # Broad geographical region, e.g. "Europe", "North America", "Asia"
+        nuclear_port_capable, # Boolean flag: True if the country has ports that could potentially handle nuclear-powered ships
+        nuclear_port_count, # Number of candidate ports in the country that could be relevant for nuclear-ship deployment
+        route_relevance,  # Boolean flag: True if the country is relevant for the assumed shipping routes, even if it is not part of the fuel supply chain
+        uranium_mining, # Boolean flag: True if the country is considered a uranium mining or milling country
+        uranium_conversion, # Boolean flag: True if the country has uranium conversion capacity, U3O8 to UF6
+        enrichment, # Boolean flag: True if the country has uranium enrichment capacity
+        fuel_fabrication, # Boolean flag: True if the country has nuclear fuel fabrication capacity or is considered a candidate for it
+        reactor_fabrication, # Boolean flag: True if the country has reactor/module manufacturing capacity or is considered a candidate for it
+        waste_management, # Boolean flag: True if the country is considered relevant for spent-fuel or radioactive-waste management
+        uranium_production_tU_per_year, # Annual uranium mine production, expressed as tonnes of contained uranium per year [tU/year]
+        conversion_capacity_tU_per_year, # Annual uranium conversion capacity, expressed as tonnes of uranium per year [tU/year]
+        enrichment_capacity_SWU_per_year, # Annual enrichment capacity, expressed in separative work units per year [SWU/year]
+        fuel_fabrication_capacity_tHM_per_year, # Annual nuclear fuel fabrication capacity, expressed as tonnes of heavy metal per year [tHM/year]
+        reactor_fabrication_capacity_units_per_year, # Annual reactor/module fabrication capacity, expressed as reactor units or modules per year
+        notes="", # Optional free-text notes, assumptions, references, or comments about the country
     ):
         self.name = name
         self.iso3 = iso3
