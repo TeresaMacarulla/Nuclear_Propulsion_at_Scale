@@ -1,2 +1,2 @@
-name;installed_P[MWe];propulsion[MW];auxiliary[MW];avg_speed[knots];op_time[h];portcalls
-Passenger ferry;25;17.5;7.5;16.5;4100;500
+name;installed_P[MWe];propulsion[MWe];auxiliary[MWe];avg_speed[knots];op_time[h];portcalls
+Passenger ferry;25;24.27;0.73;16.5;4100;500

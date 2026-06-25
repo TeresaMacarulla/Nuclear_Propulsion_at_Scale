@@ -1,2 +1,2 @@
-name;installed_P[MWe];propulsion[MW];auxiliary[MW];avg_speed[knots];op_time[h];portcalls
-Fishing vessels;25;16.3;8.8;9;2350;40
+name;installed_P[MWe];propulsion[MWe];auxiliary[MWe];avg_speed[knots];op_time[h];portcalls
+Fishing vessels;25;24.71;0.29;9;2350;40
