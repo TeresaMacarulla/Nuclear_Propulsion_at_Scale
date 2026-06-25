@@ -15,7 +15,6 @@ def model(powered_ships):
     -------
     instance of FuelNeeds class
         Fuel related outputs.
-    
     instance of InfrastructureNeeds class
         Infrastructure related outputs.
     """
@@ -28,63 +27,100 @@ def model(powered_ships):
         swu  += SW(fuelmass*1e+3,powered_ship.enrichment*1e-2)
     return FuelNeeds(fuel_throughput,swu,N_years),InfrastructureNeeds()
 
-
-# Temporary set up, will organize later
 # Deployment over time (2035-2050)
-years = [i for i in range(16)]# years after 2035
-# make fleet with Allseas SMRs to begin with. Use fleet shares from Overleaf document.
-fleet_shares = [ # tuples (ship segment filepath [str], share of overall fleet [float,%])
-    ("inputs/ship/ship_bulkcarrier.txt",21.6),
-    ("inputs/ship/ship_container.txt",7.0),("inputs/ship/ship_l_container.txt",18.0),("inputs/ship/ship_ul_container.txt",20.0),
-    ("inputs/ship/ship_offshore.txt",12.6),("inputs/ship/ship_tanker.txt",2.7),
-    ("inputs/ship/ship_m_icebreaker.txt",3.0),("inputs/ship/ship_l_icebreaker.txt",3.0),("inputs/ship/ship_fishing.txt",2.1),
-    ("inputs/ship/ship_cruise.txt",5.0),("inputs/ship/ship_ferry.txt",5.0)
-]
-ships_total = 600 # 600 vessels in total
-fleet = []
-fuel_needs = []
-infrastructure_needs = []
-for year in years: # loop over years after 2035
-    fleet_i = []
-    for j in range(len(fleet_shares)): # loop over ship segments
-        fleet_i.append(init_powered_ship_from_files(fleet_shares[j][0],"inputs/reactor_allseas.txt",
-                                                    number=round(fleet_shares[j][1]*1e-2*ships_total*sigmoid(year,1,years[-1]/2))))
-    fleet.append(fleet_i)
-    fuel_needs_i,infrastructure_needs_i = model(fleet_i)
-    fuel_needs.append(fuel_needs_i)
-    infrastructure_needs.append(infrastructure_needs_i)
-# extract data
-fuel_throughput  = [fuel_needs[i].fuel_throughput for i in range(len(fuel_needs))]
-swu = [fuel_needs[i].swu for i in range(len(fuel_needs))]
-# plot relevant values
-plt.plot(np.array(years)+2035,fuel_throughput)
-plt.title("Fuel throughput of the entire 600 ship fleet over time")
-plt.xlabel("Year")
-plt.ylabel("tons")
-plt.savefig("plots/fuel_throughput.png")
-plt.close()
+def deployment(scenario,ships_total = 600):
+    """
+    Get model outputs over time for a given deployment scenario.
 
-plt.plot(np.array(years)+2035,np.array(swu)*1e-6)
-plt.title("Separative work required of the entire 600 ship fleet over time")
-plt.xlabel("Year")
-plt.ylabel("MSWU")
-plt.savefig("plots/swu.png")
-plt.close()
+    Parameters
+    ----------
+    scenario : string
+        Filename of scenario. Filepath=f"inputs/scenario/scenario_{scenario}.txt"
+    ships_total : int
+        Total number of ships in fleet in 2050.
+            
+    Returns
+    -------
+    List of instances of FuelNeeds class
+        Fuel related outputs over time.
+    List of instances of InfrastructureNeeds class
+        Infrastructure related outputs over time.
+    List of lists of instances of PoweredShip class
+        Fleet composition over time
+    List of floats
+        Years after 2035.
+    """
+    years = [i for i in range(16)]# years after 2035
+    fleet_shares = np.loadtxt(f"inputs/scenario/scenario_{scenario}.txt",delimiter=';',dtype=str)
+    fleet = []
+    fuel_needs = []
+    infrastructure_needs = []
+    for year in years: # loop over years after 2035
+        fleet_i = []
+        for j in range(1,len(fleet_shares[:,0])): # loop over ship segments
+            fleet_i.append(init_powered_ship_from_files(f"inputs/ship/ship_{fleet_shares[j,0]}.txt",
+                                                        f"inputs/reactor_{fleet_shares[j,2]}.txt",
+                                                        number=round(fleet_shares[j,1].astype(float)*1e-2*ships_total*sigmoid(year,1,years[-1]/2)))
+                                                        )
+        fleet.append(fleet_i)
+        fuel_needs_i,infrastructure_needs_i = model(fleet_i)
+        fuel_needs.append(fuel_needs_i)
+        infrastructure_needs.append(infrastructure_needs_i)
+    return fuel_needs,infrastructure_needs,fleet,years
 
-# plot number of ships
-fleet_matrix = np.array(fleet)
-ships_total_over_time = np.zeros(len(fleet_matrix[:,0]))
-for j in range(len(fleet_matrix[0,:])):
-    shipnumber = np.array([fleet_matrix[i,j].shipnumber for i in range(len(fleet_matrix[:,j]))])
-    ships_total_over_time += shipnumber
-    plt.plot(np.array(years)+2035,shipnumber,label=fleet_matrix[0,j].shipname)
-plt.plot(np.array(years)+2035,ships_total_over_time,label="Total",lw =4,color='k')
-plt.title("Fleet size over time")
-plt.xlabel("Year")
-plt.ylabel("Number")
-plt.legend()
-plt.savefig("plots/fleet.png")
-plt.close()
+# Example: load baseline scenario
+fuel_needs,infrastructure_needs,fleet,years = deployment("baseline")
+def plot_scenario(scenario,ships_total = 600):
+    """
+    Plot model outputs over time for a given deployment scenario.
+
+    Parameters
+    ----------
+    scenario : string
+        Filename of scenario. Filepath=f"inputs/scenario/scenario_{scenario}.txt"
+    ships_total : int
+        Total number of ships in fleet in 2050.
+            
+    Returns
+    -------
+    void
+    """
+    # consider adding option for loading stored results from file
+    fuel_needs,infrastructure_needs,fleet,years = deployment(scenario,ships_total)
+    # extract data
+    fuel_throughput  = [fuel_needs[i].fuel_throughput for i in range(len(fuel_needs))]
+    swu = [fuel_needs[i].swu for i in range(len(fuel_needs))]
+    # plot relevant values
+    plt.plot(np.array(years)+2035,fuel_throughput)
+    plt.title(f"Fuel throughput of the entire 600 ship fleet over time\n in {scenario} scenario")
+    plt.xlabel("Year")
+    plt.ylabel("tons")
+    plt.savefig(f"plots/{scenario}_fuel_throughput.png")
+    plt.close()
+
+    plt.plot(np.array(years)+2035,np.array(swu)*1e-6)
+    plt.title(f"Separative work required of the entire 600 ship fleet over time\n in {scenario} scenario")
+    plt.xlabel("Year")
+    plt.ylabel("MSWU")
+    plt.savefig(f"plots/{scenario}_swu.png")
+    plt.close()
+
+    # plot number of ships
+    fleet_matrix = np.array(fleet)
+    ships_total_over_time = np.zeros(len(fleet_matrix[:,0]))
+    for j in range(len(fleet_matrix[0,:])):
+        shipnumber = np.array([fleet_matrix[i,j].shipnumber for i in range(len(fleet_matrix[:,j]))])
+        ships_total_over_time += shipnumber
+        plt.plot(np.array(years)+2035,shipnumber,label=fleet_matrix[0,j].shipname)
+    plt.plot(np.array(years)+2035,ships_total_over_time,label="Total",lw =4,color='k')
+    plt.title(f"Fleet size over time\n in {scenario} scenario")
+    plt.xlabel("Year")
+    plt.ylabel("Number")
+    plt.legend()
+    plt.savefig(f"plots/{scenario}_fleet.png")
+    plt.close()
+    return
+plot_scenario("baseline")
 # # Test: Panamax containership with Allseas SMR
 # PoweredPanamaxContainer = init_powered_ship_from_files("inputs/ship/ship_container.txt","inputs/reactor_allseas.txt")
 # # increase number of ships:
