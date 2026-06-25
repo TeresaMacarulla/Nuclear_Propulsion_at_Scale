@@ -1,2 +1,2 @@
 name;installed_P[MWe];propulsion[MWe];auxiliary[MWe];avg_speed[knots];op_time[h];portcalls
-Bulk carrier;25;21.65;0.35;10.5;1400;15
+Bulk carrier;25;24.65;0.35;10.5;1400;15
