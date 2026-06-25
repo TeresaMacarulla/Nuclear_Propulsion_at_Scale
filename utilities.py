@@ -3,6 +3,15 @@ from reactor import Reactor
 from ship import Ship, PoweredShip
 from country import Country
 
+class FuelNeeds:
+    def __init__(self,fuel_throughput,swu,N_years):
+        self.fuel_throughput = fuel_throughput
+        self.swu = swu
+        self.N_years = N_years
+class InfrastructureNeeds:
+    def __init__(self):
+        pass
+
 def init_reactor_from_file(filename):
     file = np.loadtxt(filename, delimiter=';',dtype=str)
     power,burnup,enrichment,name = file[1,1].astype(float),file[1,2].astype(float),file[1,3].astype(float),file[1,0]
@@ -10,15 +19,15 @@ def init_reactor_from_file(filename):
 
 def init_ship_from_file(filename):
     file = np.loadtxt(filename, delimiter=';',dtype=str)
-    propulsion,auxiliary,avg_speed,op_time,portcalls,name = file[1,1].astype(float),file[1,2].astype(float),file[1,3].astype(float),file[1,4].astype(float),file[1,5].astype(float),file[1,0]
-    return Ship(propulsion,auxiliary,avg_speed,op_time,portcalls,name)
+    installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,name = file[1,1].astype(float),file[1,2].astype(float),file[1,3].astype(float),file[1,4].astype(float),file[1,5].astype(float),file[1,6].astype(float),file[1,0]
+    return Ship(installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,name)
 
-def init_powered_ship_from_files(shipfilename,reactorfilename):
+def init_powered_ship_from_files(shipfilename,reactorfilename,number=1):
     shipfile = np.loadtxt(shipfilename, delimiter=';',dtype=str)
     reactorfile = np.loadtxt(reactorfilename, delimiter=';',dtype=str)
     power,burnup,enrichment,reactorname = reactorfile[1,1].astype(float),reactorfile[1,2].astype(float),reactorfile[1,3].astype(float),reactorfile[1,0]
-    propulsion,auxiliary,avg_speed,op_time,portcalls,shipname = shipfile[1,1].astype(float),shipfile[1,2].astype(float),shipfile[1,3].astype(float),shipfile[1,4].astype(float),shipfile[1,5].astype(float),shipfile[1,0]
-    return PoweredShip(propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,power,burnup,enrichment,reactorname)
+    installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname = shipfile[1,1].astype(float),shipfile[1,2].astype(float),shipfile[1,3].astype(float),shipfile[1,4].astype(float),shipfile[1,5].astype(float),shipfile[1,6].astype(float),shipfile[1,0]
+    return PoweredShip(installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,power,burnup,enrichment,reactorname,number=number)
 
 def fuelmass_from_burnup(power,time,burnup):
     """
@@ -84,15 +93,6 @@ def SW(fuelmass,enrichment,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2): # assume
     W  = F-fuelmass
     return fuelmass*(1-2*enrichment)*np.log((1-enrichment)/enrichment)+W*(1-2*tail_assay)*np.log((1-tail_assay)/tail_assay)-F*(1-2*feed_assay)*np.log((1-feed_assay)/feed_assay)
 
-class FuelNeeds:
-    def __init__(self,fuel_throughput,swu,N_years):
-        self.fuel_throughput = fuel_throughput
-        self.swu = swu
-        self.N_years = N_years
-class InfrastructureNeeds:
-    def __init__(self):
-        pass
-
 def str_to_bool(value):
     """Convert txt-file boolean fields to Python booleans.
 
@@ -126,3 +126,6 @@ def init_country_from_file(filename):
         reactor_fabrication_capacity_units_per_year=float(row[16]),
         notes=row[17] if len(row) > 17 else "",
     )
+
+def sigmoid(x,a,midpoint):
+    return 1 / (1 + np.exp(-a*(x-midpoint)))

@@ -1,5 +1,6 @@
 class Ship:
-    def __init__(self,propulsion,auxiliary,avg_speed,op_time,portcalls,name):
+    def __init__(self,installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,name):
+        self.installed_power = installed_power
         self.propulsion = propulsion
         self.auxiliary = auxiliary
         self.avg_speed = avg_speed
@@ -18,11 +19,11 @@ class Ship:
 from reactor import Reactor   
 import math
 class PoweredShip(Ship,Reactor):
-    def __init__(self,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,power,burnup,enrichment,reactorname):
-        Ship.__init__(self,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname) 
+    def __init__(self,installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,power,burnup,enrichment,reactorname,number = 1):
+        Ship.__init__(self,installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname) 
         Reactor.__init__(self,power,burnup,enrichment,reactorname)
-        self.reactornumber = math.ceil((self.propulsion+self.auxiliary)*1.0/self.power) # divide ship power demand by reactor power supply and round up to nearest integer to find number of reactor modules needed
-        self.shipnumber = 1
+        self.reactornumber = math.ceil(self.installed_power/self.power) # divide ship power demand by reactor power supply and round up to nearest integer to find number of reactor modules needed
+        self.shipnumber = number
         self.total_reactornumber = self.shipnumber*self.reactornumber
 
     # set number of combinations of ship and reactor
