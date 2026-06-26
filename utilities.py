@@ -4,10 +4,10 @@ from ship import Ship, PoweredShip
 from country import Country
 
 class FuelNeeds:
-    def __init__(self,fuel_throughput,swu,N_years):
+    def __init__(self,fuel_throughput,swu,feedmass):
         self.fuel_throughput = fuel_throughput
         self.swu = swu
-        self.N_years = N_years
+        self.feedmass = feedmass
 class InfrastructureNeeds:
     def __init__(self):
         pass
