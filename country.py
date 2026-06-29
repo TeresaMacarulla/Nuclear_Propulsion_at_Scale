@@ -27,7 +27,7 @@ class Country:
         reactor_fabrication_capacity_units_per_year, # Annual reactor/module fabrication capacity, expressed as reactor units or modules per year
         notes="", # Optional free-text notes, assumptions, references, or comments about the country
     ):
-        self.name = name
+        self.countryname = name
         self.iso3 = iso3
         self.region = region
 
@@ -39,7 +39,7 @@ class Country:
         # Supply-chain role
         self.uranium_mining = uranium_mining
         self.uranium_conversion = uranium_conversion
-        self.enrichment = enrichment
+        self.enrichment_capacity = enrichment
         self.fuel_fabrication = fuel_fabrication
         self.reactor_fabrication = reactor_fabrication
         self.waste_management = waste_management
@@ -55,14 +55,14 @@ class Country:
 
     def __str__(self):
         return (
-            f"=== {self.name} ({self.iso3}) country characteristics ===\n"
+            f"=== {self.country_name} ({self.iso3}) country characteristics ===\n"
             f"Region: {self.region}\n"
             f"Nuclear-port capable: {self.nuclear_port_capable}\n"
             f"Number of candidate nuclear ports: {self.nuclear_port_count}\n"
             f"Relevant for ship routes: {self.route_relevance}\n"
             f"Uranium mining: {self.uranium_mining}\n"
             f"Uranium conversion: {self.uranium_conversion}\n"
-            f"Enrichment: {self.enrichment}\n"
+            f"Enrichment: {self.enrichment_capacity}\n"
             f"Fuel fabrication: {self.fuel_fabrication}\n"
             f"Reactor fabrication: {self.reactor_fabrication}\n"
             f"Waste management: {self.waste_management}\n"

@@ -22,12 +22,35 @@ def init_ship_from_file(filename):
     installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,name = file[1,1].astype(float),file[1,2].astype(float),file[1,3].astype(float),file[1,4].astype(float),file[1,5].astype(float),file[1,6].astype(float),file[1,0]
     return Ship(installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,name)
 
-def init_powered_ship_from_files(shipfilename,reactorfilename,number=1):
+def init_powered_ship_from_files(shipfilename,reactorfilename,countryfilename,number=1):
     shipfile = np.loadtxt(shipfilename, delimiter=';',dtype=str)
     reactorfile = np.loadtxt(reactorfilename, delimiter=';',dtype=str)
     power,burnup,enrichment,reactorname = reactorfile[1,1].astype(float),reactorfile[1,2].astype(float),reactorfile[1,3].astype(float),reactorfile[1,0]
     installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname = shipfile[1,1].astype(float),shipfile[1,2].astype(float),shipfile[1,3].astype(float),shipfile[1,4].astype(float),shipfile[1,5].astype(float),shipfile[1,6].astype(float),shipfile[1,0]
-    return PoweredShip(installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,power,burnup,enrichment,reactorname,number=number)
+    countryfile = np.loadtxt(countryfilename, delimiter=';', dtype=str)
+    row = countryfile[1, :]
+
+    return PoweredShip(installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,
+                       power,burnup,enrichment,reactorname,
+                        countryname=row[0],
+                        iso3=row[1],
+                        region=row[2],
+                        nuclear_port_capable=str_to_bool(row[3]),
+                        nuclear_port_count=int(float(row[4])),
+                        route_relevance=str_to_bool(row[5]),
+                        uranium_mining=str_to_bool(row[6]),
+                        uranium_conversion=str_to_bool(row[7]),
+                        enrichment_capacity=str_to_bool(row[8]),
+                        fuel_fabrication=str_to_bool(row[9]),
+                        reactor_fabrication=str_to_bool(row[10]),
+                        waste_management=str_to_bool(row[11]),
+                        uranium_production_tU_per_year=float(row[12]),
+                        conversion_capacity_tU_per_year=float(row[13]),
+                        enrichment_capacity_SWU_per_year=float(row[14]),
+                        fuel_fabrication_capacity_tHM_per_year=float(row[15]),
+                        reactor_fabrication_capacity_units_per_year=float(row[16]),
+                        notes=row[17] if len(row) > 17 else "",
+                        number=number)
 
 def fuelmass_from_burnup(power,time,burnup):
     """

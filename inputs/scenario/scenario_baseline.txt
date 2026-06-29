@@ -1,12 +1,12 @@
-Ship segment;Fleet share;Reactor
-bulkcarrier;21.6;allseas
-container;7.0;allseas
-l_container;18.0;allseas
-ul_container;20.0;allseas
-offshore;12.6;allseas
-tanker;2.7;allseas
-m_icebreaker;3.0;allseas
-l_icebreaker;3.0;allseas
-fishing;2.1;allseas
-cruise;5.0;allseas
-ferry;5.0;allseas
+Ship segment;Fleet share;Reactor;Country
+bulkcarrier;21.6;allseas;netherlands
+container;7.0;allseas;netherlands
+l_container;18.0;allseas;netherlands
+ul_container;20.0;allseas;netherlands
+offshore;12.6;allseas;netherlands
+tanker;2.7;allseas;netherlands
+m_icebreaker;3.0;allseas;netherlands
+l_icebreaker;3.0;allseas;netherlands
+fishing;2.1;allseas;netherlands
+cruise;5.0;allseas;netherlands
+ferry;5.0;allseas;netherlands

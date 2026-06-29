@@ -73,8 +73,9 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
     for year in years: # loop over years after 2035
         fleet_i = []
         for j in range(1,len(fleet_shares[:,0])): # loop over ship segments
-            fleet_i.append(init_powered_ship_from_files(f"inputs/ship/ship_{fleet_shares[j,0]}.txt",
-                                                        f"inputs/reactor_{fleet_shares[j,2]}.txt",
+            fleet_i.append(init_powered_ship_from_files(f"inputs/ship/ship_{fleet_shares[j,0]}.txt", # ship file
+                                                        f"inputs/reactor_{fleet_shares[j,2]}.txt", # reactor file
+                                                        f"inputs/country/country_{fleet_shares[j,3]}.txt", # country file
                                                         number=round(fleet_shares[j,1].astype(float)*1e-2*ships_total*sigmoid(year,1,years[-1]/2)))
                                                         )
         fleet.append(fleet_i)
@@ -85,7 +86,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
 
 # Example: load baseline scenario
 fuel_needs,infrastructure_needs,fleet,years = deployment("baseline")
-def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,end_year=2050):
+def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.6*1e-2,feed_assay = 0.72*1e-2,end_year=2050):
     """
     Plot model outputs over time for a given deployment scenario.
 
