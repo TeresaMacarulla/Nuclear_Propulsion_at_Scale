@@ -38,7 +38,7 @@ def model(powered_ships,
     return FuelNeeds(fuel_throughput,swu,_feedmass),InfrastructureNeeds()
 
 # Deployment over time (2035-2050)
-def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2):
+def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,end_year = 2050):
     """
     Get model outputs over time for a given deployment scenario.
 
@@ -65,7 +65,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
     List of floats
         Years after 2035.
     """
-    years = [i for i in range(16)]# years after 2035
+    years = [i for i in range(end_year-2035+1)]# years after 2035
     fleet_shares = np.loadtxt(f"inputs/scenario/scenario_{scenario}.txt",delimiter=';',dtype=str)
     fleet = []
     fuel_needs = []
@@ -85,7 +85,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
 
 # Example: load baseline scenario
 fuel_needs,infrastructure_needs,fleet,years = deployment("baseline")
-def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2):
+def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,end_year=2050):
     """
     Plot model outputs over time for a given deployment scenario.
 
@@ -106,7 +106,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,fee
     void
     """
     # consider adding option for loading stored results from file
-    fuel_needs,infrastructure_needs,fleet,years = deployment(scenario,ships_total,N_years,tail_assay,feed_assay)
+    fuel_needs,infrastructure_needs,fleet,years = deployment(scenario,ships_total,N_years,tail_assay,feed_assay,end_year)
     # extract data
     fuel_throughput  = [fuel_needs[i].fuel_throughput for i in range(len(fuel_needs))]
     swu = [fuel_needs[i].swu for i in range(len(fuel_needs))]
@@ -152,7 +152,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,fee
     plt.savefig(f"plots/{scenario}_fleet.png")
     plt.close()
     return
-plot_scenario("baseline")
+plot_scenario("baseline",ships_total=800,end_year=2060)
 # # Test: Panamax containership with Allseas SMR
 # PoweredPanamaxContainer = init_powered_ship_from_files("inputs/ship/ship_container.txt","inputs/reactor_allseas.txt")
 # # increase number of ships:
