@@ -35,22 +35,20 @@ def init_powered_ship_from_files(shipfilename,reactorfilename,countryfilename,nu
                         countryname=row[0],
                         iso3=row[1],
                         region=row[2],
-                        nuclear_port_capable=str_to_bool(row[3]),
-                        nuclear_port_count=int(float(row[4])),
-                        route_relevance=str_to_bool(row[5]),
-                        uranium_mining=str_to_bool(row[6]),
-                        uranium_conversion=str_to_bool(row[7]),
-                        enrichment_capacity=str_to_bool(row[8]),
-                        fuel_fabrication=str_to_bool(row[9]),
-                        reactor_fabrication=str_to_bool(row[10]),
-                        waste_management=str_to_bool(row[11]),
-                        uranium_production_tU_per_year=float(row[12]),
-                        conversion_capacity_tU_per_year=float(row[13]),
-                        enrichment_capacity_SWU_per_year=float(row[14]),
-                        fuel_fabrication_capacity_tHM_per_year=float(row[15]),
-                        reactor_fabrication_capacity_units_per_year=float(row[16]),
-                        notes=row[17] if len(row) > 17 else "",
-                        number=number)
+                        oecd_member=str_to_bool(row[3]),
+                        supply=str_to_bool(row[4]),
+                        step=row[5],
+                        supply_from_year=float(row[6]),
+                        capacity=float(row[7]),
+                        capacity_unit=row[8],
+                        operation=str_to_bool(row[9]),
+                        available_from_year=float(row[10]),
+                        ports = float(row[11]),
+                        ports_names=row[12],
+                        latitude=float(row[13]),
+                        longitude=float(row[14]),
+                        number=number
+                        )
 
 def fuelmass_from_burnup(power,time,burnup):
     """

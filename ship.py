@@ -22,23 +22,34 @@ import math
 
 class PoweredShip(Ship,Reactor,Country):
     def __init__(self,
-                 installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname, # Ship parameters
-                 power,burnup,enrichment,reactorname, # Reactor parameters
-                 countryname,iso3,region,nuclear_port_capable,nuclear_port_count,route_relevance, # Country parameters
-                 uranium_mining,uranium_conversion,enrichment_capacity,fuel_fabrication, # Country parameters
-                 reactor_fabrication,waste_management,uranium_production_tU_per_year, # Country parameters
-                 conversion_capacity_tU_per_year,enrichment_capacity_SWU_per_year, # Country parameters
-                 fuel_fabrication_capacity_tHM_per_year, reactor_fabrication_capacity_units_per_year,notes, # Country parameters
-                 number = 1 # PoweredShip parameters
-                 ):
+                installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname, # Ship parameters
+                power,burnup,enrichment,reactorname, # Reactor parameters
+                countryname, # Country name, e.g. "France", "Norway", "Canada"
+                iso3, # Three-letter ISO country code, e.g. "FRA", "NOR", "CAN"
+                region, # Broad geographical region, e.g. "Europe", "North America", "Asia"
+                oecd_member,   # True if the country is in the OECD
+                supply, # True if the country takes part in the supply chain
+                step,              # Supply-chain step: "enrichment", "triso_fabrication", "reactor_manufacturing"
+                supply_from_year, # Year when the capability is assumed available
+                capacity,          # Numerical capacity per year
+                capacity_unit,     # e.g. "SWU/year", "t/year", "reactor modules/year"
+                operation, # True if the country has relevant ports for the ships operation routes
+                available_from_year, # Year when the country ports start taking part in the routes
+                ports, # Number of relevant ports
+                ports_names, # Names of the relevant ports
+                latitude,  # Port latitudes separated by ","
+                longitude, # Port longitude separated by ","
+                number = 1 # PoweredShip parameters
+                ):
         # Run initialisers from parent classes
         Ship.__init__(self,installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname) 
         Reactor.__init__(self,power,burnup,enrichment,reactorname)
-        Country.__init__(self,countryname,iso3,region,nuclear_port_capable,nuclear_port_count,route_relevance,
-                         uranium_mining,uranium_conversion,enrichment_capacity,fuel_fabrication,reactor_fabrication,
-                         waste_management,uranium_production_tU_per_year,conversion_capacity_tU_per_year,enrichment_capacity_SWU_per_year,
-                         fuel_fabrication_capacity_tHM_per_year,reactor_fabrication_capacity_units_per_year,notes
-                         )
+        Country.__init__(self,
+                        countryname,iso3,region,oecd_member,   
+                        supply,step,supply_from_year,capacity,capacity_unit,
+                        operation,available_from_year,ports,ports_names,
+                        latitude,longitude,
+                        )
         # Continue with initialiser for child class
         self.reactornumber = math.ceil(self.installed_power/self.power) # divide ship power demand by reactor power supply and round up to nearest integer to find number of reactor modules needed
         self.shipnumber = number

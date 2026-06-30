@@ -1,10 +1,13 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from utilities import *
+from utilities import fuelmass_from_burnup,SW,feedmass,init_powered_ship_from_files,sigmoid
+from outputs import FuelNeeds,InfrastructureNeeds
 
 def model(powered_ships,
           N_years = 5, # years between refuelings. Should maybe add as variable in Ship class instead
-          tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2 # assume tail assay of 0.40% and natural uranium as feed as default
+          tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2, # assume tail assay of 0.40% and natural uranium as feed as default
+          m_U_pebble = 8, # [g] uranium mass in a single fuel pebble
+          d_pebble = 6*1e-2 # [m] diameter 
           ):
     """
     Main function for calculating model outputs for a single year.
@@ -28,6 +31,8 @@ def model(powered_ships,
     """
     fuel_throughput  = 0.0 # metric tons
     _feedmass = 0.0 # metric tons
+    pebble_number = 0.0 # number of fuel pebbles
+    waste = 0.0 # m^3 volume of waste pebbles
     swu = 0.0 # SWU 
     for powered_ship in powered_ships:
         # The following returns masses/SWUs needed per refueling. Must divide by N_years to get per year
@@ -35,10 +40,12 @@ def model(powered_ships,
         fuel_throughput += fuelmass
         swu  += SW(fuelmass*1e+3,powered_ship.enrichment*1e-2,tail_assay,feed_assay)
         _feedmass += feedmass(fuelmass,powered_ship.enrichment,tail_assay,feed_assay)
-    return FuelNeeds(fuel_throughput,swu,_feedmass),InfrastructureNeeds()
+        pebble_number += fuelmass/(m_U_pebble*1e-6)
+    waste = pebble_number*np.pi/6*d_pebble**3 # waste volume
+    return FuelNeeds(fuel_throughput,swu,_feedmass,pebble_number,waste),InfrastructureNeeds()
 
-# Deployment over time (2035-2050)
-def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,end_year = 2050):
+# Deployment over time (2035-2060)
+def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,end_year = 2060):
     """
     Get model outputs over time for a given deployment scenario.
 
@@ -86,7 +93,8 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
 
 # Example: load baseline scenario
 fuel_needs,infrastructure_needs,fleet,years = deployment("baseline")
-def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.6*1e-2,feed_assay = 0.72*1e-2,end_year=2050):
+def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,feed_assay = 0.72*1e-2,
+                  end_year=2060):
     """
     Plot model outputs over time for a given deployment scenario.
 
@@ -111,19 +119,31 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.6*1e-2,fee
     # extract data
     fuel_throughput  = [fuel_needs[i].fuel_throughput for i in range(len(fuel_needs))]
     swu = [fuel_needs[i].swu for i in range(len(fuel_needs))]
+    pebble_number  = [fuel_needs[i].pebble_number for i in range(len(fuel_needs))]
     feedmass = [fuel_needs[i].feedmass for i in range(len(fuel_needs))]
+    waste  = [fuel_needs[i].waste for i in range(len(fuel_needs))]
 
     # plot fresh fuel throughput
-    plt.plot(np.array(years)+2035,np.array(fuel_throughput)/N_years,marker ='o',color='g') # divide by N_years to get yearly value
-    plt.title(f"Fuel throughput of a {ships_total} ship fleet per year\n in {scenario} scenario")
-    plt.xlabel("Year")
-    plt.ylabel("tons")
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    #plt.plot(np.array(years)+2035,np.array(fuel_throughput)/N_years,marker ='o',color='g') # divide by N_years to get yearly value
+    #plt.plot(np.array(years)+2035,np.array(pebble_number)/N_years,marker ='s',color='r') 
+    ax1.plot(np.array(years)+2035,np.array(fuel_throughput)/N_years,marker ='o',color='g',label="Uranium")
+    ax2.plot(np.array(years)+2035,np.array(pebble_number)/N_years,marker ='s',color='r',label="TRISO Pebbles")
+    plt.title(f"Fuel throughput per year for a {ships_total} ship fleet \n in {scenario} scenario")
+    #plt.xlabel("Year")
+    #plt.ylabel("tons")
+    ax1.set_xlabel("Year")
+    ax1.set_ylabel("Tons of uranium")
+    ax1.tick_params(axis='y', labelcolor='tab:blue')
+    ax2.set_ylabel("Number of TRISO pebbles")
+    ax2.tick_params(axis='y', labelcolor='tab:red')
     plt.savefig(f"plots/{scenario}_fuel_throughput.png")
     plt.close()
 
     # plot separative work
     plt.plot(np.array(years)+2035,np.array(swu)*1e-6/N_years,marker='o')# divide by N_years to get yearly value
-    plt.title(f"Separative work required of a {ships_total} ship fleet per year\n in {scenario} scenario\n natural uranium feed, {tail_assay*1e+2}% tail assay")
+    plt.title(f"Separative work required per year for a {ships_total} ship fleet \n in {scenario} scenario\n natural uranium feed, {tail_assay*1e+2}% tail assay")
     plt.xlabel("Year")
     plt.ylabel("MSWU")
     plt.tight_layout()
@@ -132,10 +152,18 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.6*1e-2,fee
 
     # plot natural uranium consumption
     plt.plot(np.array(years)+2035,np.array(feedmass)*1e-3/N_years,color='m',marker='s') # divide by N_years to get yearly value
-    plt.title(f"Natural uranium required of a {ships_total} ship fleet per year\n in {scenario} scenario, {tail_assay*1e+2}% tail assay")
+    plt.title(f"Natural uranium required per year for a {ships_total} ship fleet \n in {scenario} scenario, {tail_assay*1e+2}% tail assay")
     plt.xlabel("Year")
     plt.ylabel("tons")
     plt.savefig(f"plots/{scenario}_feedmass.png")
+    plt.close()
+
+    # plot waste volume
+    plt.plot(np.array(years)+2035,np.array(waste)/N_years,color='m',marker='s') # divide by N_years to get yearly value
+    plt.title(f"Waste production per year for a {ships_total} ship fleet \n in {scenario} scenario")
+    plt.xlabel("Year")
+    plt.ylabel(r"$m^3$")
+    plt.savefig(f"plots/{scenario}_waste.png")
     plt.close()
 
     # plot number of ships
