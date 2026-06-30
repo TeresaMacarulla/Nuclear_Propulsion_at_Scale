@@ -1,2 +1,0 @@
-name;iso3;region;nuclear_port_capable;nuclear_port_count;route_relevance;uranium_mining;uranium_conversion;enrichment;fuel_fabrication;reactor_fabrication;waste_management;uranium_production_tU_per_year;conversion_capacity_tU_per_year;enrichment_capacity_SWU_per_year;fuel_fabrication_capacity_tHM_per_year;reactor_fabrication_capacity_units_per_year;notes
-Netherlands;NLD;Europe;1;1;1;0;0;0;0;0;0;0;0;0;0;0;Candidate port hub country
