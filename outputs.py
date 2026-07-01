@@ -6,5 +6,7 @@ class FuelNeeds:
         self.feedmass = feedmass # natural uranium need in [tons]
         self.waste = waste # waste volume [m^3]
 class InfrastructureNeeds:
-    def __init__(self):
-        pass
+    def __init__(self,fresh_store,spent_store):
+        self.fresh_store = fresh_store # storage capacity for fresh fuel [m^3]
+        self.spent_store = spent_store # storage capacity for spent fuel [m^3]
+        
