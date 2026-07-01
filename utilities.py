@@ -27,29 +27,49 @@ def init_powered_ship_from_files(shipfilename,reactorfilename,countryfilename,nu
     reactorfile = np.loadtxt(reactorfilename, delimiter=';',dtype=str)
     power,burnup,enrichment,reactorname = reactorfile[1,1].astype(float),reactorfile[1,2].astype(float),reactorfile[1,3].astype(float),reactorfile[1,0]
     installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname = shipfile[1,1].astype(float),shipfile[1,2].astype(float),shipfile[1,3].astype(float),shipfile[1,4].astype(float),shipfile[1,5].astype(float),shipfile[1,6].astype(float),shipfile[1,0]
-    countryfile = np.loadtxt(countryfilename, delimiter=';', dtype=str)
-    row = countryfile[1, :]
+    try: # try to initialize with associated country
+        countryfile = np.loadtxt(countryfilename, delimiter=';', dtype=str)
+        row = countryfile[1, :]
 
-    return PoweredShip(installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,
-                       power,burnup,enrichment,reactorname,
-                        countryname=row[0],
-                        iso3=row[1],
-                        region=row[2],
-                        oecd_member=str_to_bool(row[3]),
-                        supply=str_to_bool(row[4]),
-                        step=row[5],
-                        supply_from_year=float(row[6]),
-                        capacity=float(row[7]),
-                        capacity_unit=row[8],
-                        operation=str_to_bool(row[9]),
-                        available_from_year=float(row[10]),
-                        ports = float(row[11]),
-                        ports_names=row[12],
-                        latitude=float(row[13]),
-                        longitude=float(row[14]),
-                        number=number
-                        )
-
+        return PoweredShip(installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,
+                        power,burnup,enrichment,reactorname,
+                            countryname=row[0],
+                            iso3=row[1],
+                            region=row[2],
+                            oecd_member=str_to_bool(row[3]),
+                            supply=str_to_bool(row[4]),
+                            step=row[5],
+                            supply_from_year=float(row[6]),
+                            capacity=float(row[7]),
+                            capacity_unit=row[8],
+                            operation=str_to_bool(row[9]),
+                            available_from_year=float(row[10]),
+                            ports = float(row[11]),
+                            ports_names=row[12],
+                            latitude=float(row[13]),
+                            longitude=float(row[14]),
+                            number=number
+                            )
+    except: # if fail to initialize with country, initialize without
+        return PoweredShip(installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname,
+                    power,burnup,enrichment,reactorname,
+                    countryname=None,
+                    iso3=None,
+                    region=None,
+                    oecd_member=None,
+                    supply=None,
+                    step=None,
+                    supply_from_year=None,
+                    capacity=None,
+                    capacity_unit=None,
+                    operation=None,
+                    available_from_year=None,
+                    ports = None,
+                    ports_names=None,
+                    latitude=None,
+                    longitude=None,
+                    number=number
+                    )
 def fuelmass_from_burnup(power,time,burnup):
     """
     Calculate reactor fuel mass from burnup.

@@ -44,12 +44,13 @@ class PoweredShip(Ship,Reactor,Country):
         # Run initialisers from parent classes
         Ship.__init__(self,installed_power,propulsion,auxiliary,avg_speed,op_time,portcalls,shipname) 
         Reactor.__init__(self,power,burnup,enrichment,reactorname)
-        Country.__init__(self,
-                        countryname,iso3,region,oecd_member,   
-                        supply,step,supply_from_year,capacity,capacity_unit,
-                        operation,available_from_year,ports,ports_names,
-                        latitude,longitude,
-                        )
+        if countryname:
+            Country.__init__(self,
+                            countryname,iso3,region,oecd_member,   
+                            supply,step,supply_from_year,capacity,capacity_unit,
+                            operation,available_from_year,ports,ports_names,
+                            latitude,longitude,
+                            )
         # Continue with initialiser for child class
         self.reactornumber = math.ceil(self.installed_power/self.power) # divide ship power demand by reactor power supply and round up to nearest integer to find number of reactor modules needed
         self.shipnumber = number

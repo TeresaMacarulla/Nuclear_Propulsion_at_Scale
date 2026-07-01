@@ -45,7 +45,7 @@ def model(powered_ships,
     return FuelNeeds(fuel_throughput,swu,_feedmass,pebble_number,waste),InfrastructureNeeds()
 
 # Deployment over time (2035-2060)
-def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,end_year = 2060):
+def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,end_year = 2060,phasechange =7):
     """
     Get model outputs over time for a given deployment scenario.
 
@@ -61,6 +61,8 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
         Mass assay of tail after enrichment.
     feed_assay : float
         Mass assay of feed in enrichment.
+    phasechange : int
+            Year after 2035 where phase 2 starts.
     Returns
     -------
     List of instances of FuelNeeds class
@@ -72,6 +74,34 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
     List of floats
         Years after 2035.
     """
+    def two_phase_deployment(ships_end,phase,year,phasechange,end_year):
+        """
+        Calculate the number of ships in a segment for a year after 2035.
+
+        Parameters
+        ----------
+        ships_end : float
+            Number of ships of this segment at end of deployment.
+        phase : int
+            Phase number, 1 or 2.
+        year : int
+            Year after 2035.
+        phasechange : int
+            Year after 2035 where phase 2 starts.
+        end_year : int
+            Year where deployment ends.
+        Returns
+        -------
+        int
+            Number of ships of this segment at year {year} after 2035.
+        """
+        if phase == 1:
+            K1 = ships_end
+            K2 = 0
+        elif phase == 2:
+            K1 = 0
+            K2 = ships_end
+        return round(K1*sigmoid(year,1,(end_year-2035)/2)+K2*sigmoid(year,1,(end_year-2035+phasechange)/2))
     years = [i for i in range(end_year-2035+1)]# years after 2035
     fleet_shares = np.loadtxt(f"inputs/scenario/scenario_{scenario}.txt",delimiter=';',dtype=str)
     fleet = []
@@ -83,8 +113,13 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
             fleet_i.append(init_powered_ship_from_files(f"inputs/ship/ship_{fleet_shares[j,0]}.txt", # ship file
                                                         f"inputs/reactor_{fleet_shares[j,2]}.txt", # reactor file
                                                         f"inputs/country/country_{fleet_shares[j,3]}.txt", # country file
-                                                        number=round(fleet_shares[j,1].astype(float)*1e-2*ships_total*sigmoid(year,1,years[-1]/2)))
-                                                        )
+                                                        #number=round(fleet_shares[j,1].astype(float)*1e-2*ships_total*sigmoid(year,1,years[-1]/2)))
+                                                        number=two_phase_deployment(fleet_shares[j,1].astype(float)*1e-2*ships_total,
+                                                                                    fleet_shares[j,4].astype(int),
+                                                                                    year,
+                                                                                    phasechange=phasechange,
+                                                                                    end_year=end_year)
+                                                        ))
         fleet.append(fleet_i)
         fuel_needs_i,infrastructure_needs_i = model(fleet_i,N_years,tail_assay,feed_assay)
         fuel_needs.append(fuel_needs_i)
