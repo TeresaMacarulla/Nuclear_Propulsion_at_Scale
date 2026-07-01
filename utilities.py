@@ -135,16 +135,29 @@ def SW(fuelmass,enrichment,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2): # assume
     return fuelmass*(1-2*enrichment)*np.log((1-enrichment)/enrichment)+W*(1-2*tail_assay)*np.log((1-tail_assay)/tail_assay)-F*(1-2*feed_assay)*np.log((1-feed_assay)/feed_assay)
 
 def str_to_bool(value):
-    """Convert txt-file boolean fields to Python booleans.
+    """Convert txt-file boolean fields to Python booleans."""
+    return str(value).strip().lower() == "true"
 
-    Accepted value: true
-    Everything else is interpreted as False.
-    """
-    return str(value).strip().lower() in ("true")
+def str_to_list(value):
+    """Convert comma-separated txt fields to a list of strings."""
+    value = str(value).strip()
+    if value.lower() in ("none", "0", ""):
+        return []
+    return [x.strip() for x in value.split(",")]
 
+def str_to_float_list(value):
+    """Convert comma-separated txt fields to a list of floats."""
+    value = str(value).strip()
+    if value.lower() in ("none", "0", ""):
+        return []
+    return [float(x.strip()) for x in value.split(",")]
+
+def str_to_int(value):
+    """Convert txt numeric field to integer."""
+    return int(float(str(value).strip()))
 
 def init_country_from_file(filename):
-    file = np.loadtxt(filename, delimiter=';', dtype=str)
+    file = np.loadtxt(filename, delimiter=";", dtype=str)
     row = file[1, :]
 
     return Country(
@@ -152,17 +165,19 @@ def init_country_from_file(filename):
         iso3=row[1],
         region=row[2],
         oecd_member=str_to_bool(row[3]),
+
         supply=str_to_bool(row[4]),
-        step=row[5],
-        supply_from_year=float(row[6]),
-        capacity=float(row[7]),
-        capacity_unit=row[8],
+        step=str_to_list(row[5]),
+        supply_from_year=str_to_float_list(row[6]),
+        capacity=str_to_float_list(row[7]),
+        capacity_unit=str_to_list(row[8]),
+
         operation=str_to_bool(row[9]),
-        available_from_year=float(row[10]),
-        ports = float(row[11]),
-        port_names=row[12],
-        latitude=float(row[13]),
-        longitude=float(row[14]),
+        available_from_year=str_to_float_list(row[10]),
+        ports=str_to_int(row[11]),
+        port_names=str_to_list(row[12]),
+        latitude=str_to_float_list(row[13]),
+        longitude=str_to_float_list(row[14]),
     )
 
 def sigmoid(x,a,midpoint):
