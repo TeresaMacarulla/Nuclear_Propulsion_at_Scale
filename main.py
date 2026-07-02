@@ -99,7 +99,6 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
             K2 = ships_end
         return round(K1*sigmoid(year,1,(end_year-2035)/2)+K2*sigmoid(year,1,(end_year-2035+phasechange)/2))
     years = [i for i in range(end_year-2035+1)]# years after 2035
-    print(years)
     fleet_shares = np.loadtxt(f"inputs/scenario/scenario_{scenario}.txt",delimiter=';',dtype=str)
     fleet = []
     fuel_needs = []
@@ -125,12 +124,9 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
             fresh_store=N_years*fuel_needs[year].waste # "waste" is a measure of total pebble volume burnt per year on average
         else:
             fresh_store = N_years*(fuel_needs[year].waste-fuel_needs[year-1].waste)
-        if year-N_years>0: # if old ships need refueling
+        if year-N_years>=0: # if old ships need refueling
             #print(f"Year = {year}, N_years = {N_years}, floor(year/N_years) = {math.floor(year/N_years)}")
-            for i in range(math.floor(year/N_years)):
-                fresh_store += infrastructure_needs[year-N_years*(i+1)].fresh_store#N_years*(fuel_needs[year-N_years*(i+1)].waste-fuel_needs[year-N_years*(i+1)-1].waste)
-        elif year-N_years==0: # refueling of the ships from 2035
-            fresh_store+=N_years*fuel_needs[0].waste
+            fresh_store += infrastructure_needs[year-N_years].fresh_store#N_years*(fuel_needs[year-N_years*(i+1)].waste-fuel_needs[year-N_years*(i+1)-1].waste)
         spent_store = None
         infrastructure_needs.append(InfrastructureNeeds(fresh_store,spent_store))
     return fuel_needs,infrastructure_needs,fleet,years
