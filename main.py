@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from utilities import fuelmass_from_burnup,SW,feedmass,init_powered_ship_from_files,sigmoid
 from outputs import FuelNeeds,InfrastructureNeeds
-import math
 
 def model(powered_ships,
           tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2, # assume tail assay of 0.40% and natural uranium as feed as default
@@ -41,7 +40,8 @@ def model(powered_ships,
     return FuelNeeds(fuel_throughput,swu,_feedmass,pebble_number,waste)
 
 # Deployment over time (2035-2060)
-def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,end_year = 2060,phasechange =7):
+def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,
+               end_year = 2060,phasechange =7,storeyears = 10):
     """
     Get model outputs over time for a given deployment scenario.
 
@@ -57,8 +57,12 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
         Mass assay of tail after enrichment.
     feed_assay : float
         Mass assay of feed in enrichment.
+    end_year : int
+        Year when deployment ends.
     phasechange : int
-            Year after 2035 where phase 2 starts.
+        Year after 2035 where phase 2 starts.
+    storeyears : int
+        Years spent fuel are stored in port.
     Returns
     -------
     List of instances of FuelNeeds class
@@ -127,14 +131,19 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
         if year-N_years>=0: # if old ships need refueling
             #print(f"Year = {year}, N_years = {N_years}, floor(year/N_years) = {math.floor(year/N_years)}")
             fresh_store += infrastructure_needs[year-N_years].fresh_store#N_years*(fuel_needs[year-N_years*(i+1)].waste-fuel_needs[year-N_years*(i+1)-1].waste)
-        spent_store = None
+            spent_store = infrastructure_needs[year-1].spent_store+infrastructure_needs[year-N_years].fresh_store # spent fuel storage = fresh fuel storage at refueling
+            if year-N_years-storeyears>=0:# remove spent fuel from storage at certain time interval
+                spent_store-= infrastructure_needs[year-N_years-storeyears].fresh_store
+        else:
+            spent_store = 0.0
+
         infrastructure_needs.append(InfrastructureNeeds(fresh_store,spent_store))
     return fuel_needs,infrastructure_needs,fleet,years
 
 # Example: load baseline scenario
 fuel_needs,infrastructure_needs,fleet,years = deployment("baseline")
 def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,feed_assay = 0.72*1e-2,
-                  end_year=2060,phasechange= 7):
+                  end_year=2060,phasechange= 7,storeyears = 10):
     """
     Plot model outputs over time for a given deployment scenario.
 
@@ -150,12 +159,19 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
         Mass assay of tail after enrichment.
     feed_assay : float
         Mass assay of feed in enrichment.
+    end_year : int
+        Year when deployment ends.
+    phasechange : int
+        Year after 2035 where phase 2 starts.
+    storeyears : int
+        Years spent fuel are stored in port.
     Returns
     -------
     void
     """
     # consider adding option for loading stored results from file
-    fuel_needs,infrastructure_needs,fleet,years = deployment(scenario,ships_total,N_years,tail_assay,feed_assay,end_year=end_year,phasechange=phasechange)
+    fuel_needs,infrastructure_needs,fleet,years = deployment(scenario,ships_total,N_years,tail_assay,feed_assay,
+                                                             end_year=end_year,phasechange=phasechange,storeyears=storeyears)
     # extract data
     fuel_throughput  = [fuel_needs[i].fuel_throughput for i in range(len(fuel_needs))]
     swu = [fuel_needs[i].swu for i in range(len(fuel_needs))]
@@ -163,6 +179,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     feedmass = [fuel_needs[i].feedmass for i in range(len(fuel_needs))]
     waste  = [fuel_needs[i].waste for i in range(len(fuel_needs))]
     fresh_store = [infrastructure_needs[i].fresh_store for i in range(len(infrastructure_needs))]
+    spent_store = [infrastructure_needs[i].spent_store for i in range(len(infrastructure_needs))]
 
     # plot fresh fuel throughput
     fig, ax1 = plt.subplots()
@@ -208,11 +225,21 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     plt.close()
 
     # plot fresh fuel storage needs
-    plt.plot(np.array(years)+2035,np.array(fresh_store),color='m',marker='s') 
-    plt.title(f"Fresh fuel storage needs for a {ships_total} ship fleet \n in {scenario} scenario")
+    plt.plot(np.array(years)+2035,np.array(fresh_store),color='m',marker='d') 
+    plt.title(f"Fresh fuel storage needs for a {ships_total} ship fleet \n in {scenario} scenario, {N_years} year refueling interval")
     plt.xlabel("Year")
     plt.ylabel(r"Volume [$m^3$]")
+    plt.tight_layout()
     plt.savefig(f"plots/{scenario}_fresh_store.png")
+    plt.close()
+
+    # plot spent fuel storage needs
+    plt.plot(np.array(years)+2035,np.array(spent_store),color='c',marker='o') 
+    plt.title(f"Spent fuel storage needs for a {ships_total} ship fleet \n in {scenario} scenario, {N_years} year refueling interval, {storeyears} year storage")
+    plt.xlabel("Year")
+    plt.ylabel(r"Volume [$m^3$]")
+    plt.tight_layout()
+    plt.savefig(f"plots/{scenario}_spent_store.png")
     plt.close()
 
     # plot number of ships
@@ -230,7 +257,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     plt.savefig(f"plots/{scenario}_fleet.png")
     plt.close()
     return
-plot_scenario("baseline",ships_total=800,end_year=2060) 
+plot_scenario("baseline",ships_total=800,end_year=2060,storeyears=8) 
 # # Test: Panamax containership with Allseas SMR
 # PoweredPanamaxContainer = init_powered_ship_from_files("inputs/ship/ship_container.txt","inputs/reactor_allseas.txt")
 # # increase number of ships:
