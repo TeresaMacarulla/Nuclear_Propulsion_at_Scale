@@ -1,2 +1,2 @@
 name;installed_P[MWe];propulsion[MWe];auxiliary[MWe];avg_speed[knots];op_time[h];portcalls
-Oil tanker;75;73.67;1.33;10.6;2100;20
+Oil tanker;75;73.67;1.33;15;5500;20

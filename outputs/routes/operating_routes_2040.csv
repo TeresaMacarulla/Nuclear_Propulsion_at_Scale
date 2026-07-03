@@ -1,0 +1,16 @@
+from_port;from_country;to_port;to_country;activation_year;distance_km
+Antwerp-Bruges;Belgium;Shanghai;China;2035;19574.56
+Antwerp-Bruges;Belgium;Hamburg;Germany;2035;670.13
+Antwerp-Bruges;Belgium;Busan;South Korea;2038;20173.14
+Antwerp-Bruges;Belgium;Rotterdam;Netherlands;2035;182.1
+Antwerp-Bruges;Belgium;Singapore;Singapore;2035;15485.88
+Shanghai;China;Hamburg;Germany;2035;20079.15
+Shanghai;China;Busan;South Korea;2038;868.74
+Shanghai;China;Rotterdam;Netherlands;2035;19613.74
+Shanghai;China;Singapore;Singapore;2035;4099.48
+Hamburg;Germany;Busan;South Korea;2038;20677.73
+Hamburg;Germany;Rotterdam;Netherlands;2035;578.52
+Hamburg;Germany;Singapore;Singapore;2035;15990.47
+Busan;South Korea;Rotterdam;Netherlands;2038;20212.32
+Busan;South Korea;Singapore;Singapore;2038;4698.06
+Rotterdam;Netherlands;Singapore;Singapore;2035;15525.06
