@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from utilities import fuelmass_from_burnup,SW,feedmass,init_powered_ship_from_files,sigmoid
 from outputs import FuelNeeds,InfrastructureNeeds
+import math
 
 def model(powered_ships,
           tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2, # assume tail assay of 0.40% and natural uranium as feed as default
@@ -107,37 +108,59 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
     fleet = []
     fuel_needs = []
     infrastructure_needs = []
+    ships_in_fleet = [] # total number of ships in fleet per year
     for year in years: # loop over years after 2035
         fleet_i = []
+        ships_in_fleet_i = 0
         for j in range(1,len(fleet_shares[:,0])): # loop over ship segments
-            fleet_i.append(init_powered_ship_from_files(f"inputs/ship/ship_{fleet_shares[j,0]}.txt", # ship file
-                                                        f"inputs/reactor_{fleet_shares[j,2]}.txt", # reactor file
-                                                        f"inputs/country/country_{fleet_shares[j,3]}.txt", # country file
-                                                        #number=round(fleet_shares[j,1].astype(float)*1e-2*ships_total*sigmoid(year,1,years[-1]/2)))
-                                                        number=two_phase_deployment(fleet_shares[j,1].astype(float)*1e-2*ships_total,
+            shipnumber= two_phase_deployment(fleet_shares[j,1].astype(float)*1e-2*ships_total,
                                                                                     fleet_shares[j,4].astype(int),
                                                                                     year,
                                                                                     phasechange=phasechange,
                                                                                     end_year=end_year)
+            ships_in_fleet_i+=shipnumber
+            fleet_i.append(init_powered_ship_from_files(f"inputs/ship/ship_{fleet_shares[j,0]}.txt", # ship file
+                                                        f"inputs/reactor_{fleet_shares[j,2]}.txt", # reactor file
+                                                        f"inputs/country/country_{fleet_shares[j,3]}.txt", # country file
+                                                        #number=round(fleet_shares[j,1].astype(float)*1e-2*ships_total*sigmoid(year,1,years[-1]/2)))
+                                                        number=shipnumber
                                                         ))
+        ships_in_fleet.append(ships_in_fleet_i)
         fleet.append(fleet_i)
         fuel_needs_i = model(fleet_i,tail_assay,feed_assay)
         fuel_needs.append(fuel_needs_i)
         # calculate fresh and spent fuel storage needs
         if year == 0:
             fresh_store=N_years*fuel_needs[year].waste # "waste" is a measure of total pebble volume burnt per year on average
+            fuelinit = ships_in_fleet[0]
+            fuelinit_tons = N_years*fuel_needs_i.fuel_throughput
+            fuelinit_pebbles = N_years*fuel_needs_i.pebble_number
         else:
             fresh_store = N_years*(fuel_needs[year].waste-fuel_needs[year-1].waste)
+            fuelinit = ships_in_fleet[year]-ships_in_fleet[year-1]
+            fuelinit_tons =  N_years*(fuel_needs[year].fuel_throughput-fuel_needs[year-1].fuel_throughput)
+            fuelinit_pebbles =  N_years*(fuel_needs[year].pebble_number-fuel_needs[year-1].pebble_number)
         if year-N_years>=0: # if old ships need refueling
-            #print(f"Year = {year}, N_years = {N_years}, floor(year/N_years) = {math.floor(year/N_years)}")
+            refuelings = 0
+            refueling_tons=0.0
+            refueling_pebbles=0
+            for n in range(1,math.floor(year/N_years)+1):
+                refuelings += infrastructure_needs[year-n*N_years].fuelinit
+                refueling_tons += infrastructure_needs[year-n*N_years].fuelinit_tons
+                refueling_pebbles += infrastructure_needs[year-n*N_years].fuelinit_pebbles
             fresh_store += infrastructure_needs[year-N_years].fresh_store#N_years*(fuel_needs[year-N_years*(i+1)].waste-fuel_needs[year-N_years*(i+1)-1].waste)
             spent_store = infrastructure_needs[year-1].spent_store+infrastructure_needs[year-N_years].fresh_store # spent fuel storage = fresh fuel storage at refueling
             if year-N_years-storeyears>=0:# remove spent fuel from storage at certain time interval
                 spent_store-= infrastructure_needs[year-N_years-storeyears].fresh_store
         else:
             spent_store = 0.0
+            refuelings = 0
+            refueling_tons = 0.0
+            refueling_pebbles = 0
 
-        infrastructure_needs.append(InfrastructureNeeds(fresh_store,spent_store))
+        infrastructure_needs.append(InfrastructureNeeds(fresh_store,spent_store,
+                                                        refuelings,refueling_tons,refueling_pebbles,
+                                                        fuelinit,fuelinit_tons,fuelinit_pebbles))
     return fuel_needs,infrastructure_needs,fleet,years
 
 # Example: load baseline scenario
@@ -180,6 +203,12 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     waste  = [fuel_needs[i].waste for i in range(len(fuel_needs))]
     fresh_store = [infrastructure_needs[i].fresh_store for i in range(len(infrastructure_needs))]
     spent_store = [infrastructure_needs[i].spent_store for i in range(len(infrastructure_needs))]
+    fuelinit = [infrastructure_needs[i].fuelinit for i in range(len(infrastructure_needs))]
+    refuelings = [infrastructure_needs[i].refuelings for i in range(len(infrastructure_needs))]
+    fuelinit_tons = [infrastructure_needs[i].fuelinit_tons for i in range(len(infrastructure_needs))]
+    refueling_tons = [infrastructure_needs[i].refueling_tons for i in range(len(infrastructure_needs))]
+    fuelinit_pebbles = [infrastructure_needs[i].fuelinit_pebbles for i in range(len(infrastructure_needs))]
+    refueling_pebbles = [infrastructure_needs[i].refueling_pebbles for i in range(len(infrastructure_needs))]
 
     # plot fresh fuel throughput
     fig, ax1 = plt.subplots()
@@ -240,6 +269,41 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     plt.ylabel(r"Volume [$m^3$]")
     plt.tight_layout()
     plt.savefig(f"plots/{scenario}_spent_store.png")
+    plt.close()
+
+    # Plot ships deployed and ships refueled per year
+    plt.plot(np.array(years)+2035,np.array(fuelinit),label = "Ships deployed",color='c',marker='o') 
+    plt.plot(np.array(years)+2035,np.array(refuelings),label="Ships refueled",color='m',marker='d')
+    plt.plot(np.array(years)+2035,np.array(refuelings)+np.array(fuelinit),label="Total ships serviced",color='y',marker='s')
+    #plt.plot(np.array(years)+2035,(np.array(refuelings)+np.array(fuelinit)).mean()*np.ones(len(years)),label="Mean",color='k',linestyle=':')
+    plt.title(f"Ships deployed and refueled per year\n in {scenario} scenario, {N_years} year refueling interval")
+    plt.xlabel("Year")
+    plt.ylabel(r"Number of ships")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(f"plots/{scenario}_refuelings.png")
+    plt.close()
+
+    # Plot initial fuel loadings and refueling amounts per year
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    #plt.plot(np.array(years)+2035,np.array(fuel_throughput)/N_years,marker ='o',color='g') # divide by N_years to get yearly value
+    #plt.plot(np.array(years)+2035,np.array(pebble_number)/N_years,marker ='s',color='r') 
+    ax1.plot(np.array(years)+2035,np.array(fuelinit_tons),marker ='o',color='g',label="Initial fuel loading")
+    ax1.plot(np.array(years)+2035,np.array(refueling_tons),marker ='s',color='r',label="Refueling")
+    ax2.plot(np.array(years)+2035,np.array(fuelinit_pebbles),marker ='o',color='g',label="_initial")
+    ax2.plot(np.array(years)+2035,np.array(refueling_pebbles),marker ='s',color='r',label="_refuel")
+    plt.title(f"Initial fuel loadings and refuelings per year\n in {scenario} scenario")
+    #plt.xlabel("Year")
+    #plt.ylabel("tons")
+    ax1.set_xlabel("Year")
+    ax1.set_ylabel("Tons of uranium")
+    ax1.tick_params(axis='y')#, labelcolor='tab:blue')
+    ax2.set_ylabel("Number of TRISO pebbles")
+    ax2.tick_params(axis='y')#, labelcolor='tab:red')
+    fig.legend(loc='upper left', bbox_to_anchor=(0.15, 0.8))
+    #fig.tight_layout()
+    plt.savefig(f"plots/{scenario}_refueling_requirements.png")
     plt.close()
 
     # plot number of ships
