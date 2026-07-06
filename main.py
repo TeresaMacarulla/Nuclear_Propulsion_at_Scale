@@ -42,7 +42,7 @@ def model(powered_ships,
 
 # Deployment over time (2035-2060)
 def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,
-               end_year = 2060,phasechange =7,storeyears = 10):
+               end_year = 2060,phasechange =7,storeyears = 10,steepness = 1.0):
     """
     Get model outputs over time for a given deployment scenario.
 
@@ -64,6 +64,8 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
         Year after 2035 where phase 2 starts.
     storeyears : int
         Years spent fuel are stored in port.
+    steepness : float
+        Steepness of sigmoid deployment curve.
     Returns
     -------
     List of instances of FuelNeeds class
@@ -75,7 +77,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
     List of floats
         Years after 2035.
     """
-    def two_phase_deployment(ships_end,phase,year,phasechange,end_year):
+    def two_phase_deployment(ships_end,phase,year,phasechange,end_year,steepness=1.0):
         """
         Calculate the number of ships in a segment for a year after 2035.
 
@@ -91,6 +93,8 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
             Year after 2035 where phase 2 starts.
         end_year : int
             Year where deployment ends.
+        steepness : float
+            Steepness of sigmoid deployment curve.
         Returns
         -------
         int
@@ -102,7 +106,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
         elif phase == 2:
             K1 = 0
             K2 = ships_end
-        return round(K1*sigmoid(year,1,(end_year-2035)/2)+K2*sigmoid(year,1,(end_year-2035+phasechange)/2))
+        return round(K1*sigmoid(year,steepness,(end_year-2035)/2)+K2*sigmoid(year,steepness,(end_year-2035+phasechange)/2))
     years = [i for i in range(end_year-2035+1)]# years after 2035
     fleet_shares = np.loadtxt(f"inputs/scenario/scenario_{scenario}.txt",delimiter=';',dtype=str)
     fleet = []
@@ -117,7 +121,8 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
                                                                                     fleet_shares[j,4].astype(int),
                                                                                     year,
                                                                                     phasechange=phasechange,
-                                                                                    end_year=end_year)
+                                                                                    end_year=end_year,
+                                                                                    steepness=steepness)
             ships_in_fleet_i+=shipnumber
             fleet_i.append(init_powered_ship_from_files(f"inputs/ship/ship_{fleet_shares[j,0]}.txt", # ship file
                                                         f"inputs/reactor_{fleet_shares[j,2]}.txt", # reactor file
@@ -166,7 +171,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
 # Example: load baseline scenario
 fuel_needs,infrastructure_needs,fleet,years = deployment("baseline")
 def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,feed_assay = 0.72*1e-2,
-                  end_year=2060,phasechange= 7,storeyears = 10):
+                  end_year=2060,phasechange= 7,storeyears = 10,steepness = 1.0,save_deployment=False):
     """
     Plot model outputs over time for a given deployment scenario.
 
@@ -188,13 +193,18 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
         Year after 2035 where phase 2 starts.
     storeyears : int
         Years spent fuel are stored in port.
+    steepness : float
+        Steepness of sigmoid deployment curve.
+    save_deployment : boolean
+        Whether to save time development of number of vessels in each ship segment to file.
     Returns
     -------
     void
     """
     # consider adding option for loading stored results from file
     fuel_needs,infrastructure_needs,fleet,years = deployment(scenario,ships_total,N_years,tail_assay,feed_assay,
-                                                             end_year=end_year,phasechange=phasechange,storeyears=storeyears)
+                                                             end_year=end_year,phasechange=phasechange,storeyears=storeyears,
+                                                             steepness=steepness)
     # extract data
     fuel_throughput  = [fuel_needs[i].fuel_throughput for i in range(len(fuel_needs))]
     swu = [fuel_needs[i].swu for i in range(len(fuel_needs))]
@@ -309,10 +319,16 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     # plot number of ships
     fleet_matrix = np.array(fleet)
     ships_total_over_time = np.zeros(len(fleet_matrix[:,0]))
+    if save_deployment:
+        deployment_matrix = []
+        deployment_matrix.append([fleet_matrix[0,j].shipname for j in range(len(fleet_matrix[0,:]))])
+        for i in range(len(fleet_matrix[:,0])):
+            deployment_matrix.append([str(fleet_matrix[i,j].shipnumber) for j in range(len(fleet_matrix[i,:]))])
+        np.savetxt(f"outputs/deployment_{scenario}.txt", deployment_matrix,fmt='%s')
     for j in range(len(fleet_matrix[0,:])):
         shipnumber = np.array([fleet_matrix[i,j].shipnumber for i in range(len(fleet_matrix[:,j]))])
         ships_total_over_time += shipnumber
-        plt.plot(np.array(years)+2035,shipnumber,label=fleet_matrix[0,j].shipname)
+        plt.plot(np.array(years)+2035,shipnumber,label=fleet_matrix[0,j].shipname)            
     plt.plot(np.array(years)+2035,ships_total_over_time,label="Total",lw =4,color='k')
     plt.title(f"Fleet size over time\n in {scenario} scenario")
     plt.xlabel("Year")
@@ -321,7 +337,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     plt.savefig(f"plots/{scenario}_fleet.png")
     plt.close()
     return
-plot_scenario("baseline",ships_total=800,end_year=2060,storeyears=8) 
+plot_scenario("baseline",ships_total=800,end_year=2060,storeyears=8,steepness=0.55,phasechange=7,save_deployment=True) 
 # # Test: Panamax containership with Allseas SMR
 # PoweredPanamaxContainer = init_powered_ship_from_files("inputs/ship/ship_container.txt","inputs/reactor_allseas.txt")
 # # increase number of ships:
