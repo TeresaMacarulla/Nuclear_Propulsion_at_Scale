@@ -274,23 +274,34 @@ def add_distance_to_ships(ships):
 
     return ships_with_distance
 
-def total_distance_year(ships, file):
+def total_distance_year(ships, file, plot, start_year=2035, output_file=None):
     """
-    Calculate the total annual sailing distance made by the entire fleet.
+    Calculate total annual fleet sailing distance by year.
 
     Inputs
     ------
-    ships: Each ship object must have ship.distance  [km/year per ship]
+    ships:
+        Output of add_distance_to_ships(ships).
+        Each ship object must have:
+            ship.distance  [km/year per ship]
 
     file:
         Path to deployment_baseline.txt.
 
+    start_year:
+        First year represented by the first data row in the deployment file.
+
     Output
     ------
-    total distances traveled by the fleet
-        
+    List of dictionaries:
+        [
+            {"year": 2035, "total_distance_km": ...},
+            {"year": 2036, "total_distance_km": ...},
+            ...
+        ]
     """
-    
+
+    # Map ship segment name -> distance per ship per year
     ship_distance = {}
 
     for ship in ships:
@@ -301,11 +312,23 @@ def total_distance_year(ships, file):
 
     with open(file, "r", encoding="utf-8") as f:
         lines = f.readlines()
+    if not lines:
+        raise ValueError("Deployment file is empty.")
 
-    # First line is header, so we skip it
+    # First line contains the deployment segment names
+    deployment_segment_order = lines[0].strip().split()
+
+    if plot:
+        years = []
+        distance_by_segment = {}
+        for segment_name in deployment_segment_order:
+            distance_by_segment[segment_name] = []
+        total_distance = []
+
     data_lines = lines[1:]
+    data_row_index = 0
 
-    for i, line in enumerate(data_lines):
+    for line_number, line in enumerate(data_lines, start=2):
         line = line.strip()
 
         if not line:
@@ -313,15 +336,34 @@ def total_distance_year(ships, file):
 
         ship_numbers = [float(value) for value in line.split()]
 
-        year = START_YEAR + i
+        year = start_year + data_row_index
+
+        if plot:
+            years.append(year)
+            yearly_total_distance = 0.0
+
         total_distance_km = 0.0
 
         for segment_name, number_of_ships in zip(
             deployment_segment_order,
             ship_numbers,
         ):
+            if segment_name not in ship_distance:
+                raise ValueError(
+                    f"Ship segment '{segment_name}' is present in the deployment file "
+                    "but was not found in the loaded ship objects.\n"
+                    f"Available ship segments are: {list(ship_distance.keys())}"
+                )
 
+            if plot:
+                segment_distance = number_of_ships * ship_distance[segment_name]
+                distance_by_segment[segment_name].append(segment_distance)
+                yearly_total_distance += segment_distance
+            
             total_distance_km += number_of_ships * ship_distance[segment_name]
+
+        if plot:
+            total_distance.append(yearly_total_distance)
 
         total_distances.append(
             {
@@ -329,6 +371,42 @@ def total_distance_year(ships, file):
                 "total_distance_km": total_distance_km,
             }
         )
+
+        data_row_index += 1
+
+    if plot:
+        # Plot only once, after all years have been processed
+        fig, ax = plt.subplots(figsize=(14, 8))
+
+        # Plot each ship segment
+        for segment_name, distances in distance_by_segment.items():
+            ax.plot(
+                years,
+                [distance / 1e6 for distance in distances],
+                linewidth=2.2,
+                alpha=0.75,
+                label=segment_name.replace("_", " "),
+            )
+
+        # Plot total fleet distance
+        ax.plot(
+            years,
+            [distance / 1e6 for distance in total_distance],
+            linewidth=4.0,
+            color="black",
+            label="Total fleet",
+        )
+
+        ax.set_xlabel("Year", fontsize=20)
+        ax.set_ylabel("Annual sailing distance [million km/year]", fontsize=20)
+        ax.tick_params(axis="both", labelsize=20)
+        ax.grid(True, alpha=0.3)
+        ax.legend(fontsize=18, ncol=2)
+
+        plt.tight_layout()
+        plt.savefig(output_file, dpi=300)
+        plt.show()
+        print(f"Fleet distance plot saved to: {output_file}")
 
     return total_distances
 
@@ -359,6 +437,7 @@ def main():
         )
         port0 = port
     """
+
     ships = add_distance_to_ships(ships)
     for ship in ships:
         print(
@@ -366,6 +445,16 @@ def main():
             f"distance {int(ship.distance)} km/year - "
         )
 
+    total_distances = total_distance_year(
+        ships,
+        "outputs/deployment_baseline.txt",True,2035,"outputs/fleet_distance_km.pdf"
+        )
+
+    for row in total_distances:
+        print(
+            f"{row['year']}: "
+            f"{row['total_distance_km']:,.0f} km/year"
+        )
 
 if __name__ == "__main__":
     main()

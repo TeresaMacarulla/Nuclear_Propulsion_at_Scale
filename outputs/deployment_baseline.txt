@@ -1,4 +1,4 @@
-Bulk carrier Panamax container Large container Ultra large container Offshore vessel Oil tanker Medium Icebreaker Large Icebreaker Fishing vessels Large cruise Passenger ferry
+Bulk_carrier Panamax_container Large_container Ultra_large_container Offshore_vessel Oil_tanker Medium_Icebreaker Large_Icebreaker Fishing_vessels Large_cruise Passenger_ferry
 0 0 0 0 0 0 0 0 0 0 0
 0 0 0 0 0 0 0 0 0 0 0
 1 0 0 0 0 0 0 0 0 0 0
