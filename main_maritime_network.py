@@ -101,7 +101,7 @@ def get_operating_ports(countries, year):
 
     return active_ports
 
-# CALCULATE DISTANCES
+# CALCULATE DISTANCES 
 
 def normalize_longitude(lon):
     """Normalize longitude to the range [-180, 180]."""
@@ -243,7 +243,7 @@ def plot_route_from_coordinates(
     plt.show()
     print(f"Route map saved to: {output_file}")
 
-# COMPUTE THE FLEET CAPACITY IN KM
+# COMPUTE THE FLEET CAPACITY IN KM AND PORT CALLS
 
 KNOT_TO_KM_H = 1.852
 
@@ -410,6 +410,142 @@ def total_distance_year(ships, file, plot, start_year=2035, output_file=None):
 
     return total_distances
 
+def total_port_calls_year(ships, file, plot, start_year=2035, output_file=None):
+    """
+    Calculate total annual fleet port calls by year.
+
+    Inputs
+    ------
+    ships:
+        Each ship object must have:
+            ship.portcalls [calls/year per ship]
+
+    file:
+        Path to deployment_baseline.txt.
+
+    start_year:
+        First year represented by the first data row in the deployment file.
+
+    Output
+    ------
+    List of dictionaries:
+        [
+            {"year": 2035, "total_portcalls": ...},
+            {"year": 2036, "total_portcalls": ...},
+            ...
+        ]
+    """
+
+    # Map ship segment name -> distance per ship per year
+    ship_portcalls = {}
+
+    for ship in ships:
+        ship_name = ship.shipname
+        ship_portcalls[ship_name] = float(ship.portcalls)
+
+    total_portcalls = []
+
+    with open(file, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    if not lines:
+        raise ValueError("Deployment file is empty.")
+
+    # First line contains the deployment segment names
+    deployment_segment_order = lines[0].strip().split()
+
+    if plot:
+        years = []
+        portcalls_by_segment = {}
+        for segment_name in deployment_segment_order:
+            portcalls_by_segment[segment_name] = []
+        total_portcall = []
+
+    data_lines = lines[1:]
+    data_row_index = 0
+
+    for line_number, line in enumerate(data_lines, start=2):
+        line = line.strip()
+
+        if not line:
+            continue
+
+        ship_numbers = [float(value) for value in line.split()]
+
+        year = start_year + data_row_index
+
+        if plot:
+            years.append(year)
+            yearly_total_portcall = 0.0
+
+        total_portcal_n = 0.0
+
+        for segment_name, number_of_ships in zip(
+            deployment_segment_order,
+            ship_numbers,
+        ):
+            if segment_name not in ship_portcalls:
+                raise ValueError(
+                    f"Ship segment '{segment_name}' is present in the deployment file "
+                    "but was not found in the loaded ship objects.\n"
+                    f"Available ship segments are: {list(ship_portcalls.keys())}"
+                )
+
+            if plot:
+                segment_portcall = number_of_ships * ship_portcalls[segment_name]
+                portcalls_by_segment[segment_name].append(segment_portcall)
+                yearly_total_portcall += segment_portcall
+            
+            total_portcal_n += number_of_ships * ship_portcalls[segment_name]
+
+        if plot:
+            total_portcall.append(yearly_total_portcall)
+
+        total_portcalls.append(
+            {
+                "year": year,
+                "total_portcal_n": total_portcal_n,
+            }
+        )
+
+        data_row_index += 1
+
+    if plot:
+        # Plot only once, after all years have been processed
+        fig, ax = plt.subplots(figsize=(14, 8))
+
+        # Plot each ship segment
+        for segment_name, calls in portcalls_by_segment.items():
+            ax.plot(
+                years,
+                [call / 1.0 for call in calls],
+                linewidth=2.2,
+                alpha=0.75,
+                label=segment_name.replace("_", " "),
+            )
+
+        # Plot total fleet distance
+        ax.plot(
+            years,
+            [call / 1.0 for call in total_portcall],
+            linewidth=4.0,
+            color="black",
+            label="Total fleet",
+        )
+
+        ax.set_xlabel("Year", fontsize=20)
+        ax.set_ylabel("Annual portcalls per year", fontsize=20)
+        ax.tick_params(axis="both", labelsize=20)
+        ax.grid(True, alpha=0.3)
+        ax.legend(fontsize=18, ncol=2)
+
+        plt.tight_layout()
+        plt.savefig(output_file, dpi=300)
+        plt.show()
+        print(f"Fleet portcalls plot saved to: {output_file}")
+
+    return total_portcalls
+
+
 def main():
     countries = load_all_countries()
     ships = load_ship_segments()
@@ -449,11 +585,20 @@ def main():
         ships,
         "outputs/deployment_baseline.txt",True,2035,"outputs/fleet_distance_km.pdf"
         )
+    total_portcall = total_port_calls_year(
+        ships,
+        "outputs/deployment_baseline.txt",True,2035,"outputs/fleet_portcalls.pdf"
+    )
 
     for row in total_distances:
         print(
             f"{row['year']}: "
             f"{row['total_distance_km']:,.0f} km/year"
+        )
+    for row in total_portcall:
+        print(
+            f"{row['year']}: "
+            f"{row['total_portcal_n']:,.0f} /year"
         )
 
 if __name__ == "__main__":
