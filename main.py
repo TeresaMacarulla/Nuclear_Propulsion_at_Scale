@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from utilities import fuelmass_from_burnup,SW,feedmass,init_powered_ship_from_files,sigmoid
+from utilities import fuelmass_from_burnup,SW,feedmass,init_powered_ship_from_files,sigmoid,mass_from_volume
 from outputs import FuelNeeds,InfrastructureNeeds
 import math
 
@@ -20,6 +20,10 @@ def model(powered_ships,
         Mass assay of tail after enrichment.
     feed_assay : float
         Mass assay of feed in enrichment.
+    m_U_pebble : float
+        Uranium mass in a single fuel pebble [g]
+    d_pebble: float
+        Diameter of TRISO pebble [m]
     Returns
     -------
     instance of FuelNeeds class
@@ -42,7 +46,8 @@ def model(powered_ships,
 
 # Deployment over time (2035-2060)
 def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2,
-               end_year = 2060,phasechange =7,storeyears = 10,steepness = 1.0):
+               end_year = 2060,phasechange =7,storeyears = 10,steepness = 1.0,
+               m_U_pebble = 8,d_pebble = 6*1e-2,m_truck=8.4):
     """
     Get model outputs over time for a given deployment scenario.
 
@@ -66,6 +71,12 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
         Years spent fuel are stored in port.
     steepness : float
         Steepness of sigmoid deployment curve.
+    m_U_pebble : float
+        Uranium mass in a single fuel pebble [g]
+    d_pebble: float
+        Diameter of TRISO pebble [m]
+    m_truck : float
+        Uranium mass per truckload of spent fuel [kg]
     Returns
     -------
     List of instances of FuelNeeds class
@@ -132,7 +143,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
                                                         ))
         ships_in_fleet.append(ships_in_fleet_i)
         fleet.append(fleet_i)
-        fuel_needs_i = model(fleet_i,tail_assay,feed_assay)
+        fuel_needs_i = model(fleet_i,tail_assay,feed_assay,m_U_pebble,d_pebble)
         fuel_needs.append(fuel_needs_i)
         # calculate fresh and spent fuel storage needs
         if year == 0:
@@ -149,6 +160,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
             refuelings = 0
             refueling_tons=0.0
             refueling_pebbles=0
+            truckloads_waste = 0
             for n in range(1,math.floor(year/N_years)+1):
                 refuelings += infrastructure_needs[year-n*N_years].fuelinit
                 refueling_tons += infrastructure_needs[year-n*N_years].fuelinit_tons
@@ -157,15 +169,16 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
             spent_store = infrastructure_needs[year-1].spent_store+infrastructure_needs[year-N_years].fresh_store # spent fuel storage = fresh fuel storage at refueling
             if year-N_years-storeyears>=0:# remove spent fuel from storage at certain time interval
                 spent_store-= infrastructure_needs[year-N_years-storeyears].fresh_store
+                truckloads_waste += mass_from_volume(infrastructure_needs[year-N_years-storeyears].fresh_store,d_pebble,m_U_pebble)/m_truck
         else:
             spent_store = 0.0
             refuelings = 0
             refueling_tons = 0.0
             refueling_pebbles = 0
-
+            truckloads_waste = 0
         infrastructure_needs.append(InfrastructureNeeds(fresh_store,spent_store,
                                                         refuelings,refueling_tons,refueling_pebbles,
-                                                        fuelinit,fuelinit_tons,fuelinit_pebbles))
+                                                        fuelinit,fuelinit_tons,fuelinit_pebbles,truckloads_waste))
     return fuel_needs,infrastructure_needs,fleet,years
 
 # Example: load baseline scenario
@@ -219,6 +232,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     refueling_tons = [infrastructure_needs[i].refueling_tons for i in range(len(infrastructure_needs))]
     fuelinit_pebbles = [infrastructure_needs[i].fuelinit_pebbles for i in range(len(infrastructure_needs))]
     refueling_pebbles = [infrastructure_needs[i].refueling_pebbles for i in range(len(infrastructure_needs))]
+    truckloads_waste = [infrastructure_needs[i].truckloads_waste for i in range(len(infrastructure_needs))]
 
     # plot fresh fuel throughput
     fig, ax1 = plt.subplots()
@@ -261,6 +275,14 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     plt.xlabel("Year")
     plt.ylabel(r"Volume [$m^3$]")
     plt.savefig(f"plots/{scenario}_waste.png")
+    plt.close()
+
+    # plot truckloads of waste per year
+    plt.plot(np.array(years)+2035,np.array(truckloads_waste),color='m',marker='s') 
+    plt.title(f"Truckloads of spent fuel moved from interim storage per year\n in {scenario} scenario, {N_years} year refueling interval, {storeyears} year storage")
+    plt.xlabel("Year")
+    plt.ylabel(r"Number of truckloads")
+    plt.savefig(f"plots/{scenario}_truckloads_waste.png")
     plt.close()
 
     # plot fresh fuel storage needs

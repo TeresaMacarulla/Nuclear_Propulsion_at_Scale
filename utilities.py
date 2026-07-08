@@ -134,6 +134,46 @@ def SW(fuelmass,enrichment,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2): # assume
     W  = F-fuelmass
     return fuelmass*(1-2*enrichment)*np.log((1-enrichment)/enrichment)+W*(1-2*tail_assay)*np.log((1-tail_assay)/tail_assay)-F*(1-2*feed_assay)*np.log((1-feed_assay)/feed_assay)
 
+def number_from_volume(volume,d_pebble):
+    """
+    TRISO pebble number from total volume.
+
+    Parameters
+    ----------
+    volume : float
+        Volume of TRISO pebbles [m^3].
+    d_pebble: float
+        Diameter of TRISO pebble [m]
+    Returns
+    -------
+    int
+        Number of TRISO pebbles.
+    """
+    pebble_number = volume/(np.pi/6*d_pebble**3)
+    return pebble_number
+
+def mass_from_volume(volume,d_pebble,m_U_pebble):
+    """
+    Calculate uranium mass from TRISO pebble volume.
+
+    Parameters
+    ----------
+    volume : float
+        Volume of TRISO pebbles [m^3].
+    d_pebble : float
+        Diameter of TRISO pebble [m]
+    m_U_pebble : float
+        Uranium mass in a single fuel pebble [g]
+
+    Returns
+    -------
+    float
+        Uranium mass in pebble [kg].
+    """
+    pebble_number = number_from_volume(volume,d_pebble)
+    fuelmass = pebble_number*(m_U_pebble*1e-3)
+    return fuelmass
+
 def str_to_bool(value):
     """Convert txt-file boolean fields to Python booleans."""
     return str(value).strip().lower() == "true"
