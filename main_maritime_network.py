@@ -12,11 +12,13 @@ from utilities import init_country_from_file, init_ship_from_file
 
 COUNTRY_INPUT_DIR = Path("inputs") / "country"
 SHIP_INPUT_DIR = Path("inputs") / "ship"
-OUTPUT_MAP_DIR = Path("outputs") / "maps"
-OUTPUT_ROUTE_DIR = Path("outputs") / "routes"
-MAP_IMAGE = OUTPUT_MAP_DIR / "world_map_equirectangular.jpg"
-ROUTE_CONNECTION_FILE = Path("inputs") / "port_connection_proposals.txt"
+ROUTE_CONNECTION_FILE = Path("inputs") / "port_connection_proposals2.txt"
+ROUTE_SUMMARY_TABLE = Path("outputs") / "maritime" / "route_network_summary_by_year.txt"
+ROUTE_ALLOCATION_TABLE = Path("outputs") / "maritime" / "route_network_allocation_by_year.txt"
 
+OUTPUT_MAP_DIR = Path("outputs") / "maritime" / "all_routes"
+OUTPUT_ROUTE_DIR = Path("outputs") / "maritime" / "routes_by_segment"
+MAP_IMAGE = OUTPUT_MAP_DIR / "world_map_equirectangular.jpg"
 
 # LOADING INPUTS
 
@@ -38,7 +40,6 @@ def load_port_connection_proposals(route_file=ROUTE_CONNECTION_FILE):
             row["route_preference_score"] = float(row["route_preference_score"])
 
             row["ship_segments"] = row["ship_segments"].split("|")
-            row["bidirectional"] = row["bidirectional"].strip().lower() == "true"
 
             routes.append(row)
 
@@ -247,9 +248,14 @@ NSR_WAYPOINTS_WEST_TO_EAST = [
         "longitude": 160.0,
         "latitude": 70.5,
     },
+    {   
+        "port_name": "Proliv Longa",
+        "longitude": 178.800941,
+        "latitude": 69.802411, 
+    },
     {
         "port_name": "Bering Strait",
-        "longitude": 169.5,
+        "longitude": -169.5,
         "latitude": 65.8,
     },
 ]
@@ -301,85 +307,6 @@ def split_route_at_dateline(coordinates):
 
     return [segment for segment in segments if len(segment) >= 2]
 
-def plot_route_from_coordinates(
-    port_a,
-    port_b,
-    coordinates,
-    show_port_names=True,
-):
-    """
-    Plot one sea route between two ports using the coordinates returned by
-    route_distance().
-    """
-
-    OUTPUT_MAP_DIR.mkdir(parents=True, exist_ok=True)
-
-    img = mpimg.imread(MAP_IMAGE)
-
-    fig, ax = plt.subplots(figsize=(16, 8))
-
-    ax.imshow(
-        img,
-        extent=[-180, 180, -90, 90],
-        origin="upper",
-        zorder=0,
-    )
-
-    # Plot the sea route using the coordinates from route_distance()
-    for segment in split_route_at_dateline(coordinates):
-        lons = [point[0] for point in segment]
-        lats = [point[1] for point in segment]
-
-        ax.plot(
-            lons,
-            lats,
-            linewidth=1.5,
-            alpha=0.75,
-            zorder=3,
-        )
-
-    # Plot the two ports
-    ax.scatter(
-        [port_a["longitude"], port_b["longitude"]],
-        [port_a["latitude"], port_b["latitude"]],
-        s=90,
-        edgecolor="black",
-        linewidth=0.6,
-        zorder=5,
-    )
-
-    if show_port_names:
-        ax.text(
-            port_a["longitude"] + 1.5,
-            port_a["latitude"] + 1.0,
-            port_a["port_name"],
-            fontsize=8,
-            zorder=6,
-        )
-
-        ax.text(
-            port_b["longitude"] + 1.5,
-            port_b["latitude"] + 1.0,
-            port_b["port_name"],
-            fontsize=8,
-            zorder=6,
-        )
-
-    ax.set_xlim(-180, 180)
-    ax.set_ylim(-90, 90)
-    ax.set_xlabel("Longitude")
-    ax.set_ylabel("Latitude")
-
-    output_file = (
-        OUTPUT_MAP_DIR
-        / f"route_{safe_filename(port_a['port_name'])}_to_{safe_filename(port_b['port_name'])}.pdf"
-    )
-
-    plt.tight_layout()
-    plt.savefig(output_file, dpi=300)
-    plt.show()
-    print(f"Route map saved to: {output_file}")
-
 # COMPUTE THE FLEET CAPACITY IN KM AND PORT CALLS
 
 KNOT_TO_KM_H = 1.852
@@ -411,7 +338,7 @@ def add_distance_to_ships(ships):
 
     return ships_with_distance
 
-def total_distance_year(ships, file, plot, start_year=2035, output_file=None):
+def total_distance_year(ships, file, plot, start_year=2035, output_file=Path("outputs") / "maritime"):
     """
     Calculate total annual fleet sailing distance by year.
 
@@ -461,7 +388,7 @@ def total_distance_year(ships, file, plot, start_year=2035, output_file=None):
         for segment_name in deployment_segment_order:
             distance_by_segment[segment_name] = []
         total_distance = []
-
+    
     data_lines = lines[1:]
     data_row_index = 0
 
@@ -474,11 +401,11 @@ def total_distance_year(ships, file, plot, start_year=2035, output_file=None):
         ship_numbers = [float(value) for value in line.split()]
 
         year = start_year + data_row_index
-
+        
         if plot:
             years.append(year)
             yearly_total_distance = 0.0
-
+        
         total_distance_km = 0.0
 
         for segment_name, number_of_ships in zip(
@@ -491,17 +418,17 @@ def total_distance_year(ships, file, plot, start_year=2035, output_file=None):
                     "but was not found in the loaded ship objects.\n"
                     f"Available ship segments are: {list(ship_distance.keys())}"
                 )
-
+            
             if plot:
                 segment_distance = number_of_ships * ship_distance[segment_name]
                 distance_by_segment[segment_name].append(segment_distance)
                 yearly_total_distance += segment_distance
             
             total_distance_km += number_of_ships * ship_distance[segment_name]
-
+        
         if plot:
             total_distance.append(yearly_total_distance)
-
+        
         total_distances.append(
             {
                 "year": year,
@@ -510,7 +437,7 @@ def total_distance_year(ships, file, plot, start_year=2035, output_file=None):
         )
 
         data_row_index += 1
-
+    
     if plot:
         # Plot only once, after all years have been processed
         fig, ax = plt.subplots(figsize=(14, 8))
@@ -544,10 +471,10 @@ def total_distance_year(ships, file, plot, start_year=2035, output_file=None):
         plt.savefig(output_file, dpi=300)
         plt.show()
         print(f"Fleet distance plot saved to: {output_file}")
-
+    
     return total_distances
 
-def total_port_calls_year(ships, file, plot, start_year=2035, output_file=None):
+def total_port_calls_year(ships, file, plot, start_year=2035, output_file=Path("outputs") / "maritime"):
     """
     Calculate total annual fleet port calls by year.
 
@@ -826,24 +753,12 @@ def route_is_available_for_segment(route, segment_name, year):
 
     return True
 
-def route_class_weight(route_preference_class):
-    """
-    Convert route_preference_class into a numerical weight.
-    """
-    weights = {
-        "very_high": 1.20,
-        "high": 1.00,
-        "medium": 0.70,
-        "low": 0.40,
-    }
-
-    return weights.get(route_preference_class, 0.50)
-
 def allocate_routes_for_segment(
     segment_name,
     segment_capacity,
     routes,
     year,
+    previous_route_ids=None,
 ):
     """
     Allocate route travels for one ship segment in one year.
@@ -915,6 +830,34 @@ def allocate_routes_for_segment(
     remaining_distance_km = distance_capacity_km
     remaining_route_travels = number_of_route_travels
 
+    if previous_route_ids is None:
+        previous_route_ids = set()
+
+    # Keep previously selected routes active, if they are still available.
+    previous_candidate_indices = []
+
+    for i, route in enumerate(candidate_routes):
+        if route["route_id"] in previous_route_ids:
+            previous_candidate_indices.append(i)
+
+    # If there are more previous routes than available route travels,
+    # keep the highest-preference previous routes first.
+    previous_candidate_indices.sort(
+        key=lambda i: candidate_routes[i]["route_preference_score"],
+        reverse=True,
+    )
+
+    for i in previous_candidate_indices:
+        if remaining_route_travels <= 0:
+            break
+
+        route = candidate_routes[i]
+        distance_per_travel_km = 2.0 * route["distance_km_estimate"]
+
+        route_counts[i] += 1
+        remaining_distance_km -= distance_per_travel_km
+        remaining_route_travels -= 1
+
     while remaining_route_travels > 0:
         target_distance_per_travel = (
             remaining_distance_km / remaining_route_travels
@@ -926,11 +869,7 @@ def allocate_routes_for_segment(
         for i, route in enumerate(candidate_routes):
             one_way_distance_km = route["distance_km_estimate"]
 
-            if route["bidirectional"]:
-                distance_per_travel_km = 2.0 * one_way_distance_km
-            else:
-                distance_per_travel_km = one_way_distance_km
-
+            distance_per_travel_km = 2.0 * one_way_distance_km
             distance_error = abs(
                 distance_per_travel_km - target_distance_per_travel
             )
@@ -941,13 +880,9 @@ def allocate_routes_for_segment(
             )
 
             preference_score = route["route_preference_score"] / 100.0
-            class_weight = route_class_weight(
-                route["route_preference_class"]
-            )
 
             score = (
                 2.0 * preference_score
-                + class_weight
                 - distance_penalty
             )
 
@@ -956,11 +891,7 @@ def allocate_routes_for_segment(
                 best_route_index = i
 
         selected_route = candidate_routes[best_route_index]
-
-        if selected_route["bidirectional"]:
-            selected_distance_km = 2.0 * selected_route["distance_km_estimate"]
-        else:
-            selected_distance_km = selected_route["distance_km_estimate"]
+        selected_distance_km = 2.0 * selected_route["distance_km_estimate"]
 
         route_counts[best_route_index] += 1
         remaining_distance_km -= selected_distance_km
@@ -978,11 +909,7 @@ def allocate_routes_for_segment(
         route = candidate_routes[i]
 
         one_way_distance_km = route["distance_km_estimate"]
-
-        if route["bidirectional"]:
-            distance_per_travel_km = 2.0 * one_way_distance_km
-        else:
-            distance_per_travel_km = one_way_distance_km
+        distance_per_travel_km = 2.0 * one_way_distance_km
 
         route_distance_total_km = route_travels * distance_per_travel_km
         route_portcalls_total = route_travels * 2.0
@@ -1001,7 +928,6 @@ def allocate_routes_for_segment(
                 "end_iso3": route["end_iso3"],
                 "route_type": route["route_type"],
                 "route_preference_score": route["route_preference_score"],
-                "route_preference_class": route["route_preference_class"],
                 "one_way_distance_km": one_way_distance_km,
                 "distance_per_route_travel_km": distance_per_travel_km,
                 "route_travels": route_travels,
@@ -1137,10 +1063,6 @@ def plot_routes_for_segment_year(
             row["route_type"],
         )
 
-        linewidth = 0.8 + 4.0 * (
-            row["route_travels"] / max_route_travels
-        )
-
         for route_segment in split_route_at_dateline(coordinates):
             lons = [point[0] for point in route_segment]
             lats = [point[1] for point in route_segment]
@@ -1148,7 +1070,7 @@ def plot_routes_for_segment_year(
             ax.plot(
                 lons,
                 lats,
-                linewidth=linewidth,
+                linewidth=1.6,
                 alpha=0.65,
                 zorder=3,
             )
@@ -1208,34 +1130,190 @@ def plot_routes_for_segment_year(
 
     return output_file
 
-def build_route_network_for_year(
+def write_table(rows, output_file, fieldnames):
+    """
+    Write a list of dictionaries to a semicolon-separated table file.
+    """
+
+    output_file = Path(output_file)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_file, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=fieldnames,
+            delimiter=";",
+            extrasaction="ignore",
+        )
+
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"Table saved to: {output_file}")
+
+def plot_all_routes_for_year(
+    allocation_rows,
+    countries,
     year,
+    output_dir=OUTPUT_MAP_DIR,
+):
+    """
+    Plot all active routes for all ship segments in one selected year.
+
+    If the same route is used by several ship segments, the route is plotted
+    only once, and the linewidth is proportional to the total number of
+    route travels across all segments.
+    """
+
+    year_rows = []
+
+    for row in allocation_rows:
+        if row["year"] == year and row["route_travels"] > 0:
+            year_rows.append(row)
+
+    if not year_rows:
+        print(f"No active routes to plot in {year}.")
+        return None
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Aggregate repeated routes across ship segments.
+    routes_by_id = {}
+
+    for row in year_rows:
+        route_id = row["route_id"]
+
+        if route_id not in routes_by_id:
+            routes_by_id[route_id] = {
+                "year": row["year"],
+                "route_id": row["route_id"],
+                "start_port": row["start_port"],
+                "start_iso3": row["start_iso3"],
+                "end_port": row["end_port"],
+                "end_iso3": row["end_iso3"],
+                "route_type": row["route_type"],
+                "total_route_travels": 0.0,
+                "ship_segments": set(),
+            }
+
+        routes_by_id[route_id]["total_route_travels"] += row["route_travels"]
+        routes_by_id[route_id]["ship_segments"].add(row["ship_segment"])
+
+    aggregated_routes = list(routes_by_id.values())
+
+    port_lookup = build_active_port_lookup(countries, year)
+
+    img = mpimg.imread(MAP_IMAGE)
+
+    fig, ax = plt.subplots(figsize=(16, 8))
+
+    ax.imshow(
+        img,
+        extent=[-180, 180, -90, 90],
+        origin="upper",
+        zorder=0,
+    )
+
+    max_route_travels = max(
+        row["total_route_travels"]
+        for row in aggregated_routes
+    )
+
+    plotted_ports = {}
+
+    for row in aggregated_routes:
+        port_a, port_b = get_route_ports_from_lookup(row, port_lookup)
+
+        distance_km, coordinates = route_distance_model(
+            port_a,
+            port_b,
+            row["route_type"],
+        )
+
+        for route_segment in split_route_at_dateline(coordinates):
+            lons = [point[0] for point in route_segment]
+            lats = [point[1] for point in route_segment]
+
+            ax.plot(
+                lons,
+                lats,
+                linewidth=1.6,
+                alpha=0.65,
+                zorder=3,
+            )
+
+        plotted_ports[
+            (
+                port_a["port_name"],
+                port_a["longitude"],
+                port_a["latitude"],
+            )
+        ] = port_a
+
+        plotted_ports[
+            (
+                port_b["port_name"],
+                port_b["longitude"],
+                port_b["latitude"],
+            )
+        ] = port_b
+
+    for port in plotted_ports.values():
+        ax.scatter(
+            port["longitude"],
+            port["latitude"],
+            s=55,
+            edgecolor="black",
+            linewidth=0.6,
+            zorder=5,
+        )
+
+        ax.text(
+            port["longitude"] + 1.2,
+            port["latitude"] + 0.8,
+            port["port_name"],
+            fontsize=7,
+            zorder=6,
+        )
+
+    ax.set_xlim(-180, 180)
+    ax.set_ylim(-90, 90)
+    ax.set_xlabel("Longitude")
+    ax.set_ylabel("Latitude")
+    ax.set_title(f"All active routes in {year}")
+
+    output_file = output_dir / f"routes_all_segments_{year}.pdf"
+
+    plt.tight_layout()
+    plt.savefig(output_file, dpi=300)
+    plt.show()
+
+    print(f"All-segment route map saved to: {output_file}")
+
+    return output_file
+
+def build_route_network_over_time(
     ships,
     countries,
     deployment_file="outputs/deployment_baseline.txt",
     route_file=ROUTE_CONNECTION_FILE,
     start_year=2035,
-    plot=True,
+    end_year=2060,
+    plot_years=None,
+    plot_segments=None,
+    plot_all_route_years=None,
+    summary_output_file=ROUTE_SUMMARY_TABLE,
+    route_output_file=ROUTE_ALLOCATION_TABLE,
 ):
     """
-    Build the route network for one selected year.
+    Build the route network consecutively from start_year to end_year.
 
-    For each ship segment, this function:
-        1. reads the number of ships in the selected year
-        2. calculates available km/year and port calls/year
-        3. selects available routes using:
-            - proposed_operation_year
-            - ship_segments
-            - route_preference_score
-            - route_preference_class
-        4. assigns route travels to match port calls and approximate km capacity
-        5. optionally plots one route map per ship segment
+    Once a route is selected for a ship segment, it is kept active
+    in all following years, as long as the segment still has capacity.
 
-    Output:
-        network_rows:
-            one row per ship segment and route
-        summaries:
-            one row per ship segment showing target vs allocated capacity
+    This function writes:
+        1. a summary table by year and ship segment
+        2. a route-allocation table by year, segment and route
     """
 
     routes = load_port_connection_proposals(route_file)
@@ -1243,56 +1321,149 @@ def build_route_network_for_year(
     if not all(hasattr(ship, "distance") for ship in ships):
         ships = add_distance_to_ships(ships)
 
-    segment_capacities, fleet_distance_km, fleet_portcalls = (
-        get_segment_capacities_for_year(
-            ships,
-            deployment_file,
-            year,
-            start_year=start_year,
-        )
-    )
+    selected_route_ids_by_segment = {}
 
-    network_rows = []
-    summaries = []
+    all_network_rows = []
+    all_summaries = []
+    summary_table_rows = []
 
-    for segment_name, segment_capacity in segment_capacities.items():
-        allocation_rows, summary = allocate_routes_for_segment(
-            segment_name,
-            segment_capacity,
-            routes,
-            year,
-        )
+    if plot_years is None:
+        plot_years = []
 
-        network_rows.extend(allocation_rows)
-        summaries.append(summary)
+    if plot_all_route_years is None:
+        plot_all_route_years = []
 
-    print("")
-    print(f"Route network for year {year}")
-    print("--------------------------------")
-    print(f"Fleet distance capacity: {fleet_distance_km:,.0f} km/year")
-    print(f"Fleet port-call capacity: {fleet_portcalls:,.0f} port calls/year")
-    print("")
+    if plot_segments is not None:
+        plot_segments = set(plot_segments)
 
-    for summary in summaries:
-        print(
-            f"{summary['ship_segment']}: "
-            f"target distance = {summary['target_distance_km']:,.0f} km, "
-            f"allocated distance = {summary['allocated_distance_km']:,.0f} km, "
-            f"difference = {summary['distance_difference_km']:,.0f} km; "
-            f"target port calls = {summary['target_portcalls']:,.0f}, "
-            f"allocated port calls = {summary['allocated_portcalls']:,.0f}"
-        )
+    for year in range(start_year, end_year + 1):
 
-    if plot:
-        for segment_name in segment_capacities.keys():
-            plot_routes_for_segment_year(
-                network_rows,
-                countries,
+        segment_capacities, fleet_distance_km, fleet_portcalls = (
+            get_segment_capacities_for_year(
+                ships,
+                deployment_file,
                 year,
+                start_year=start_year,
+            )
+        )
+
+        year_network_rows = []
+        year_summaries = []
+
+        for segment_name, segment_capacity in segment_capacities.items():
+
+            previous_route_ids = selected_route_ids_by_segment.get(
                 segment_name,
+                set(),
             )
 
-    return network_rows, summaries
+            allocation_rows, summary = allocate_routes_for_segment(
+                segment_name,
+                segment_capacity,
+                routes,
+                year,
+                previous_route_ids=previous_route_ids,
+            )
+
+            year_network_rows.extend(allocation_rows)
+
+            summary["year"] = year
+            year_summaries.append(summary)
+
+            # Update persistent route set for this segment.
+            current_route_ids = set()
+
+            for row in allocation_rows:
+                if row["route_travels"] > 0:
+                    current_route_ids.add(row["route_id"])
+
+            selected_route_ids_by_segment[segment_name] = (
+                previous_route_ids | current_route_ids
+            )
+
+        # Store yearly summary information instead of printing it.
+        for summary in year_summaries:
+            summary_table_rows.append(
+                {
+                    "year": year,
+                    "fleet_distance_capacity_km": fleet_distance_km,
+                    "fleet_portcall_capacity": fleet_portcalls,
+                    "ship_segment": summary["ship_segment"],
+                    "target_distance_km": summary["target_distance_km"],
+                    "allocated_distance_km": summary["allocated_distance_km"],
+                    "distance_difference_km": summary["distance_difference_km"],
+                    "target_portcalls": summary["target_portcalls"],
+                    "allocated_portcalls": summary["allocated_portcalls"],
+                    "portcall_difference": summary["portcall_difference"],
+                }
+            )
+
+        if year in plot_years:
+            for segment_name in segment_capacities.keys():
+
+                if plot_segments is not None and segment_name not in plot_segments:
+                    continue
+
+                plot_routes_for_segment_year(
+                    year_network_rows,
+                    countries,
+                    year,
+                    segment_name,
+                )
+
+        if year in plot_all_route_years:
+            plot_all_routes_for_year(
+                year_network_rows,
+                countries,
+                year,
+            )
+
+        all_network_rows.extend(year_network_rows)
+        all_summaries.extend(year_summaries)
+
+    summary_fieldnames = [
+        "year",
+        "fleet_distance_capacity_km",
+        "fleet_portcall_capacity",
+        "ship_segment",
+        "target_distance_km",
+        "allocated_distance_km",
+        "distance_difference_km",
+        "target_portcalls",
+        "allocated_portcalls",
+        "portcall_difference",
+    ]
+
+    route_fieldnames = [
+        "year",
+        "ship_segment",
+        "route_id",
+        "start_port",
+        "start_iso3",
+        "end_port",
+        "end_iso3",
+        "route_type",
+        "route_preference_score",
+        "one_way_distance_km",
+        "distance_per_route_travel_km",
+        "route_travels",
+        "allocated_distance_km",
+        "allocated_portcalls",
+    ]
+
+    write_table(
+        summary_table_rows,
+        summary_output_file,
+        summary_fieldnames,
+    )
+
+    write_table(
+        all_network_rows,
+        route_output_file,
+        route_fieldnames,
+    )
+
+    return all_network_rows, all_summaries
 
 def main():
 
@@ -1300,25 +1471,21 @@ def main():
     ships = load_ship_segments()
     ships = add_distance_to_ships(ships)
 
-    network_rows, summaries = build_route_network_for_year(
-        year=2050,
+    network_rows, summaries = build_route_network_over_time(
         ships=ships,
         countries=countries,
         deployment_file="outputs/deployment_baseline.txt",
-        route_file="inputs/port_connection_proposals.txt",
+        route_file="inputs/port_connection_proposals2.txt",
         start_year=2035,
-        plot=True,
+        end_year=2060,
+        plot_years=[2035, 2040, 2045, 2050, 2055, 2060],
+        plot_segments=["Bulk_carrier","Panamax_container","Large_container","Ultra_large_container",
+                       "Offshore_vessel","Oil_tanker Medium_Icebreaker","Large_Icebreaker",
+                       "Fishing_vessels","Large_cruise Passenger_ferry"],
+        plot_all_route_years=[2035, 2040, 2045, 2050, 2055, 2060],
+        summary_output_file=ROUTE_SUMMARY_TABLE,
+        route_output_file=ROUTE_ALLOCATION_TABLE,
     )
-
-    for row in network_rows:
-        print(
-            f"{row['year']} - "
-            f"{row['ship_segment']} - "
-            f"{row['route_id']} "
-            f"{row['start_port']} -> {row['end_port']} - "
-            f"{row['route_travels']} route travels"
-        )
-
 
 if __name__ == "__main__":
     main()
