@@ -176,9 +176,12 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
             refueling_tons = 0.0
             refueling_pebbles = 0
             truckloads_waste = 0
+        _swu = SW((fuelinit_tons+refueling_tons)*1e+3,fleet_i[0].enrichment*1e-2,tail_assay,feed_assay) # Warning! Only accurate if all reactors use fuel with same enrichment
+        _feedmass = feedmass((fuelinit_tons+refueling_tons)*1e+3,fleet_i[0].enrichment*1e-2,tail_assay,feed_assay) # Warning! Only accurate if all reactors use fuel with same enrichment
         infrastructure_needs.append(InfrastructureNeeds(fresh_store,spent_store,
                                                         refuelings,refueling_tons,refueling_pebbles,
-                                                        fuelinit,fuelinit_tons,fuelinit_pebbles,truckloads_waste))
+                                                        fuelinit,fuelinit_tons,fuelinit_pebbles,truckloads_waste,
+                                                        _swu,_feedmass))
     return fuel_needs,infrastructure_needs,fleet,years
 
 # Example: load baseline scenario
@@ -220,9 +223,9 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
                                                              steepness=steepness)
     # extract data
     fuel_throughput  = [fuel_needs[i].fuel_throughput for i in range(len(fuel_needs))]
-    swu = [fuel_needs[i].swu for i in range(len(fuel_needs))]
+    swu = [infrastructure_needs[i].swu for i in range(len(fuel_needs))]
     pebble_number  = [fuel_needs[i].pebble_number for i in range(len(fuel_needs))]
-    feedmass = [fuel_needs[i].feedmass for i in range(len(fuel_needs))]
+    feedmass = [infrastructure_needs[i].feedmass for i in range(len(fuel_needs))]
     waste  = [fuel_needs[i].waste for i in range(len(fuel_needs))]
     fresh_store = [infrastructure_needs[i].fresh_store for i in range(len(infrastructure_needs))]
     spent_store = [infrastructure_needs[i].spent_store for i in range(len(infrastructure_needs))]
@@ -254,7 +257,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
 
     # plot separative work
     plt.plot(np.array(years)+2035,np.array(swu)*1e-6,marker='o')
-    plt.title(f"Separative work required per year for a {ships_total} ship fleet \n in {scenario} scenario\n natural uranium feed, {tail_assay*1e+2}% tail assay")
+    plt.title(f"Separative work required per year \n in {scenario} scenario\n natural uranium feed, {tail_assay*1e+2}% tail assay")
     plt.xlabel("Year")
     plt.ylabel("MSWU")
     plt.tight_layout()
@@ -263,7 +266,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
 
     # plot natural uranium consumption
     plt.plot(np.array(years)+2035,np.array(feedmass)*1e-3,color='m',marker='s')
-    plt.title(f"Natural uranium required per year for a {ships_total} ship fleet \n in {scenario} scenario, {tail_assay*1e+2}% tail assay")
+    plt.title(f"Natural uranium required per year \n in {scenario} scenario, {tail_assay*1e+2}% tail assay")
     plt.xlabel("Year")
     plt.ylabel("tons")
     plt.savefig(f"plots/{scenario}_feedmass.png")
@@ -361,7 +364,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     plt.savefig(f"plots/{scenario}_fleet.png")
     plt.close()
     return
-plot_scenario("baseline",ships_total=800,end_year=2060,storeyears=8,steepness=0.55,phasechange=7,save_deployment=True) 
+plot_scenario("baseline",ships_total=800,end_year=2060,storeyears=5,steepness=0.55,phasechange=7,save_deployment=True) 
 # # Test: Panamax containership with Allseas SMR
 # PoweredPanamaxContainer = init_powered_ship_from_files("inputs/ship/ship_container.txt","inputs/reactor_allseas.txt")
 # # increase number of ships:
