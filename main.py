@@ -39,7 +39,7 @@ def model(powered_ships,
         fuelmass  = fuelmass_from_burnup(powered_ship.power,powered_ship.op_time/24,powered_ship.burnup)*powered_ship.total_reactornumber
         fuel_throughput += fuelmass
         swu  += SW(fuelmass*1e+3,powered_ship.enrichment*1e-2,tail_assay,feed_assay)
-        _feedmass += feedmass(fuelmass,powered_ship.enrichment,tail_assay,feed_assay)
+        _feedmass += feedmass(fuelmass,powered_ship.enrichment*1e-2,tail_assay,feed_assay)
         pebble_number += fuelmass/(m_U_pebble*1e-6)
     waste = pebble_number*np.pi/6*d_pebble**3 # waste volume
     return FuelNeeds(fuel_throughput,swu,_feedmass,pebble_number,waste)
@@ -257,7 +257,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
 
     # plot separative work
     plt.plot(np.array(years)+2035,np.array(swu)*1e-6,marker='o')
-    plt.title(f"Separative work required per year \n in {scenario} scenario\n natural uranium feed, {tail_assay*1e+2}% tail assay")
+    plt.title(f"Separative work required per year \n in {scenario} scenario\n natural uranium feed, {tail_assay*1e+2:.2f}% tail assay")
     plt.xlabel("Year")
     plt.ylabel("MSWU")
     plt.tight_layout()
@@ -266,7 +266,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
 
     # plot natural uranium consumption
     plt.plot(np.array(years)+2035,np.array(feedmass)*1e-3,color='m',marker='s')
-    plt.title(f"Natural uranium required per year \n in {scenario} scenario, {tail_assay*1e+2}% tail assay")
+    plt.title(f"Natural uranium required per year \n in {scenario} scenario, {tail_assay*1e+2:.2f}% tail assay")
     plt.xlabel("Year")
     plt.ylabel("tons")
     plt.savefig(f"plots/{scenario}_feedmass.png")
@@ -274,7 +274,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
 
     # plot waste volume
     plt.plot(np.array(years)+2035,np.array(waste),color='m',marker='s') 
-    plt.title(f"Waste production per year for a {ships_total} ship fleet \n in {scenario} scenario")
+    plt.title(f"Waste production per year \n in {scenario} scenario")
     plt.xlabel("Year")
     plt.ylabel(r"Volume [$m^3$]")
     plt.savefig(f"plots/{scenario}_waste.png")
@@ -290,7 +290,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
 
     # plot fresh fuel storage needs
     plt.plot(np.array(years)+2035,np.array(fresh_store),color='m',marker='d') 
-    plt.title(f"Fresh fuel storage needs for a {ships_total} ship fleet \n in {scenario} scenario, {N_years} year refueling interval")
+    plt.title(f"Fresh fuel storage needs per year \n in {scenario} scenario, {N_years} year refueling interval")
     plt.xlabel("Year")
     plt.ylabel(r"Volume [$m^3$]")
     plt.tight_layout()
@@ -299,7 +299,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
 
     # plot spent fuel storage needs
     plt.plot(np.array(years)+2035,np.array(spent_store),color='c',marker='o') 
-    plt.title(f"Spent fuel storage needs for a {ships_total} ship fleet \n in {scenario} scenario, {N_years} year refueling interval, {storeyears} year storage")
+    plt.title(f"Spent fuel storage needs per year \n in {scenario} scenario, {N_years} year refueling interval, {storeyears} year storage")
     plt.xlabel("Year")
     plt.ylabel(r"Volume [$m^3$]")
     plt.tight_layout()
@@ -364,7 +364,7 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     plt.savefig(f"plots/{scenario}_fleet.png")
     plt.close()
     return
-plot_scenario("baseline",ships_total=800,end_year=2060,storeyears=5,steepness=0.55,phasechange=7,save_deployment=True) 
+plot_scenario("baseline",ships_total=800,end_year=2060,storeyears=5,steepness=0.55,phasechange=7,save_deployment=True,tail_assay=0.4*1e-2) 
 # # Test: Panamax containership with Allseas SMR
 # PoweredPanamaxContainer = init_powered_ship_from_files("inputs/ship/ship_container.txt","inputs/reactor_allseas.txt")
 # # increase number of ships:

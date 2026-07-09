@@ -108,8 +108,10 @@ def feedmass(fuelmass,enrichment,tail_assay,feed_assay):
     float
         Feed mass [kg].
     """
-
-    return fuelmass*(enrichment-tail_assay)/(feed_assay-tail_assay)
+    if (tail_assay<feed_assay) and (enrichment<1 and enrichment>feed_assay):
+        return fuelmass*(enrichment-tail_assay)/(feed_assay-tail_assay)
+    else:
+        raise ValueError("Tail assay must be smaller than feed assay, enrichment must be larger than feed assay but smaller than 1")
 
 def SW(fuelmass,enrichment,tail_assay=0.4*1e-2,feed_assay = 0.72*1e-2): # assume 0.4% tail assay and natural uranium feed for now
     """
