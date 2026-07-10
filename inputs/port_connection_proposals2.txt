@@ -1,13 +1,13 @@
 route_id;start_port;start_iso3;start_country;start_port_available_from_year;end_port;end_iso3;end_country;end_port_available_from_year;distance_km_estimate;distance_method;route_type;oecd_relation;proposed_operation_year;ship_segments;route_preference_score;notes
-R001;Rotterdam;NTH;Netherlands;2035;Hamburg;DEU;Germany;2035;579;searoute;regional_north_sea;OECD_OECD;2035;Bulk_carrier|Oil_tanker|Offshore_vessel;50;North Sea OECD corridor
-R002;Antwerp-Bruges;BEL;Belgium;2035;Hamburg;DEU;Germany;2035;670;searoute;regional_north_sea;OECD_OECD;2035;Bulk_carrier|Large_container|Offshore_vessel;50;North Sea OECD corridor
+R001;Rotterdam;NTH;Netherlands;2035;Hamburg;DEU;Germany;2035;579;searoute;regional_north_sea;OECD_OECD;2035;Bulk_carrier|Oil_tanker|Offshore_vessel|Passenger_ferry;50;North Sea OECD corridor
+R002;Antwerp-Bruges;BEL;Belgium;2035;Hamburg;DEU;Germany;2035;670;searoute;regional_north_sea;OECD_OECD;2035;Bulk_carrier|Large_container|Offshore_vessel|Large_cruise;50;North Sea OECD corridor
 R003;Rotterdam;NTH;Netherlands;2035;Singapore;SIG;Singapore;2035;15525;searoute;asia_europe_suez;OECD_nonOECD;2035;Large_container|Ultra_large_container|Oil_tanker;50;Core Asia-Europe via Suez/Malacca
 R004;Antwerp-Bruges;BEL;Belgium;2035;Singapore;SIG;Singapore;2035;15486;searoute;asia_europe_suez;OECD_nonOECD;2035;Large_container|Ultra_large_container;50;Core Asia-Europe container corridor
 R005;Hamburg;DEU;Germany;2035;Shanghai;CHI;China;2035;20079;searoute;asia_europe_suez;OECD_nonOECD;2035;Large_container|Ultra_large_container;50;Core Asia-Europe container corridor
 R006;Rotterdam;NTH;Netherlands;2035;Shanghai;CHI;China;2035;19614;searoute;asia_europe_suez;OECD_nonOECD;2035;Large_container|Ultra_large_container|Bulk_carrier;50;Core Asia-Europe container and bulk corridor
 R007;Singapore;SIG;Singapore;2035;Shanghai;CHI;China;2035;4099;searoute;intra_asia;nonOECD_nonOECD;2035;Large_container|Oil_tanker;50;East and Southeast Asia hub link
 R008;Singapore;SIG;Singapore;2035;Jebel Ali;UAE;United Arab Emirates;2041;6486;searoute;middle_east_asia;nonOECD_nonOECD;2041;Large_container|Oil_tanker;50;Middle East to Asia hub link
-R009;Jebel Ali;UAE;United Arab Emirates;2041;Rotterdam;NTH;Netherlands;2035;11631;searoute;asia_europe_suez;OECD_nonOECD;2041;Large_container|Ultra_large_container|Oil_tanker;50;Middle East to European gateway
+R009;Jebel Ali;UAE;United Arab Emirates;2041;Rotterdam;NTH;Netherlands;2035;11631;searoute;asia_europe_suez;OECD_nonOECD;2041;Panamax_container|Large_container|Ultra_large_container|Oil_tanker;50;Middle East to European gateway
 R010;Jebel Ali;UAE;United Arab Emirates;2041;Hamburg;DEU;Germany;2035;12097;searoute;asia_europe_suez;OECD_nonOECD;2041;Large_container|Ultra_large_container;50;Middle East to Northern Europe
 R011;Jebel Ali;UAE;United Arab Emirates;2041;Shanghai;CHI;China;2035;10574;searoute;middle_east_asia;nonOECD_nonOECD;2041;Large_container|Ultra_large_container|Oil_tanker;50;Middle East to China corridor
 R012;Jebel Ali;UAE;United Arab Emirates;2041;Algeciras;ESP;Spain;2048;9065;searoute;med_suez;OECD_nonOECD;2048;Large_container|Oil_tanker;50;Suez gateway to Western Mediterranean
@@ -33,7 +33,7 @@ R036;Rotterdam;NTH;Netherlands;2035;HAROPA/Le Havre-Rouen-Paris;FRA;France;2048;
 R037;Antwerp-Bruges;BEL;Belgium;2035;HAROPA/Le Havre-Rouen-Paris;FRA;France;2048;420;searoute;regional_north_sea;OECD_OECD;2048;Large_container|Bulk_carrier;50;North-West Europe corridor
 R038;Algeciras;ESP;Spain;2048;Rotterdam;NTH;Netherlands;2035;2606;searoute;europe_coastal;OECD_OECD;2048;Large_container|Oil_tanker;50;Atlantic Europe container corridor
 R039;Valencia;ESP;Spain;2048;Algeciras;ESP;Spain;2048;751;searoute;mediterranean;domestic;2048;Large_container|Passenger_ferry;50;Spanish Mediterranean link
-R040;Los Angeles;USA;United States;2047;Savannah;USA;United States;2053;8497;searoute;americas_panama;nonOECD_nonOECD;2053;Panamax_container;50;US domestic route via Panama Canal
+R040;Los Angeles;USA;United States;2047;Savannah;USA;United States;2050;8497;searoute;americas_panama;nonOECD_nonOECD;2050;Panamax_container;50;US domestic route via Panama Canal
 R041;Barcelona;ESP;Spain;2049;Marseille-Fos;FRA;France;2049;353;searoute;mediterranean;OECD_OECD;2049;Large_container|Passenger_ferry|Large_cruise;50;Western Mediterranean link
 R042;Marseille-Fos;FRA;France;2049;Genoa;ITA;Italy;2051;410;searoute;mediterranean;OECD_OECD;2051;Large_container|Large_cruise;50;Western Mediterranean link
 R043;Genoa;ITA;Italy;2051;Trieste;ITA;Italy;2051;2156;searoute;mediterranean;domestic;2051;Large_container|Bulk_carrier|Large_cruise;50;Italian port link
@@ -42,7 +42,6 @@ R050;Rotterdam;NTH;Netherlands;2035;Gdansk;POL;Poland;2050;1643;searoute;baltic;
 R051;Bergen;NOR;Norway;2052;Rotterdam;NTH;Netherlands;2035;1044;searoute;north_sea_offshore;OECD_OECD;2052;Offshore_vessel|Bulk_carrier|Passenger_ferry;50;Norway to North Sea hub
 R052;Bergen;NOR;Norway;2052;North Sea Port;BEL;Belgium;2049;1069;searoute;north_sea_offshore;OECD_OECD;2052;Offshore_vessel|Bulk_carrier;50;Norway to North Sea industrial corridor
 R053;Rotterdam;NTH;Netherlands;2035;New York and New Jersey;USA;United States;2053;6152;searoute;transatlantic;OECD_OECD;2053;Panamax_container|Ultra_large_container;50;North Atlantic OECD container corridor
-R054;Antwerp-Bruges;BEL;Belgium;2035;New York and New Jersey;USA;United States;2053;6112;searoute;transatlantic;OECD_OECD;2053;Panamax_container|Ultra_large_container;50;North Atlantic OECD container corridor
 R055;Hamburg;DEU;Germany;2035;New York and New Jersey;USA;United States;2053;6475;searoute;transatlantic;OECD_OECD;2053;Panamax_container|Ultra_large_container;50;North Atlantic OECD container corridor
 R056;HAROPA/Le Havre-Rouen-Paris;FRA;France;2048;New York and New Jersey;USA;United States;2053;5790;searoute;transatlantic;OECD_OECD;2053;Panamax_container|Ultra_large_container;50;North Atlantic OECD container corridor
 R057;Algeciras;ESP;Spain;2048;Savannah;USA;United States;2053;6865;searoute;transatlantic;OECD_OECD;2053;Panamax_container|Ultra_large_container;50;US East Coast to Mediterranean gateway
@@ -68,7 +67,7 @@ R077;Murmansk;RUSS;Russia;2046;Kirkenes;NOR;Norway;2047;319;searoute;arctic_regi
 R078;Kirkenes;NOR;Norway;2047;Tromsø;NOR;Norway;2048;647;searoute;arctic_regional;domestic;2048;Medium_Icebreaker|Large_Icebreaker|Offshore_vessel|Passenger_ferry;50;Northern Norway Arctic link
 R079;Tromsø;NOR;Norway;2048;Bergen;NOR;Norway;2052;1571;searoute;arctic_regional;domestic;2052;Offshore_vessel|Passenger_ferry|Large_cruise;50;Norwegian coast link
 R080;Murmansk;RUSS;Russia;2046;Tromsø;NOR;Norway;2048;752;searoute;arctic_regional;OECD_nonOECD;2048;Medium_Icebreaker|Large_Icebreaker|Offshore_vessel;50;Barents Sea Arctic link
-R082;Arkhangelsk;RUSS;Russia;2044;Provideniya;RUSS;Russia;2044;5937;searoute;arctic_nsr;domestic;2044;Medium_Icebreaker|Large_Icebreaker;50;Northern Sea Route backbone
+R082;Arkhangelsk;RUSS;Russia;2041;Provideniya;RUSS;Russia;2041;5937;searoute;arctic_nsr;domestic;2041;Medium_Icebreaker|Large_Icebreaker;50;Northern Sea Route backbone
 R084;Tromsø;NOR;Norway;2048;Provideniya;RUSS;Russia;2044;6411;searoute;arctic_nsr;OECD_nonOECD;2048;Medium_Icebreaker|Large_Icebreaker;50;Northern Sea Route backbone from OECD Norway
 R085;Provideniya;RUSS;Russia;2044;Busan;SKO;South Korea;2038;6235;searoute;arctic_nsr_asia;OECD_nonOECD;2044;Medium_Icebreaker|Large_Icebreaker;50;Eastern NSR connection to Korea
 R086;Provideniya;RUSS;Russia;2044;Shanghai;CHI;China;2035;7104;searoute;arctic_nsr_asia;nonOECD_nonOECD;2044;Medium_Icebreaker|Large_Icebreaker;50;Eastern NSR connection to China
