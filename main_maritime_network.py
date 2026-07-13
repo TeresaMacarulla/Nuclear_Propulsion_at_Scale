@@ -12,7 +12,7 @@ from utilities import init_country_from_file, init_ship_from_file
 
 COUNTRY_INPUT_DIR = Path("inputs") / "country"
 SHIP_INPUT_DIR = Path("inputs") / "ship"
-ROUTE_INPUT_FILE = Path("inputs") / "port_connection_proposals2.txt"
+ROUTE_INPUT_FILE = Path("inputs") / "port_connection_proposals.txt"
 SUMMARY_OUTPUT_TABLE = Path("outputs") / "maritime" / "route_network_summary_by_year.txt"
 ALLOCATION_OUTPUT_TABLE = Path("outputs") / "maritime" / "route_network_allocation_by_year.txt"
 
@@ -24,7 +24,8 @@ DISTANCE_OUTPUT_PLOT = Path("outputs") / "maritime" / "fleet_distance_capacity.p
 PORTCALLS_OUTPUT_PLOT = Path("outputs") / "maritime" / "fleet_portcall_capacity.pdf"
 
 BASELINE_INPUT_FILE = Path("outputs") / "deployment_baseline.txt"
-CONECTION_INPUT_FILE = Path("inputs") / "port_connection_proposals2.txt"
+CONECTION_INPUT_FILE = Path("inputs") / "port_connection_proposals.txt"
+NUCLEAR_PORT_INPUT_FILE = Path("inputs") / "nuclear_capable_ports.txt"
 
 # LOADING INPUTS
 
@@ -50,6 +51,43 @@ def load_port_connection_proposals(route_file=ROUTE_INPUT_FILE):
             routes.append(row)
 
     return routes
+
+def normalize_port_name(port_name):
+    """
+    Normalize a port name for matching.
+
+    This is useful because some names may contain accents or special characters,
+    for example Tromsø.
+    """
+
+    text = str(port_name).strip().lower()
+    text = text.replace("ø", "o")
+    text = text.replace("å", "a")
+    text = text.replace("æ", "ae")
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return text.strip()
+
+def load_nuclear_capable_ports(nuclear_port_file=NUCLEAR_PORT_INPUT_FILE):
+    """
+    Read the nuclear-capable ports input file.
+
+    Output
+    ------
+    nuclear_ports[normalized_port_name] = nuclear_available_from_year
+    """
+
+    nuclear_ports = {}
+
+    with open(nuclear_port_file, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f, delimiter=";")
+
+        for row in reader:
+            port_name = row["port_name"]
+            activation_year = int(row["nuclear_available_from_year"])
+
+            nuclear_ports[normalize_port_name(port_name)] = activation_year
+
+    return nuclear_ports
 
 def load_all_countries(input_dir=COUNTRY_INPUT_DIR):
     """Read all country_*.txt files from the input country folder."""
@@ -814,27 +852,40 @@ def normalize_port_key(port_name, iso3):
     Create a matching key for a port using port name and iso3.
     """
 
-    text = str(port_name).strip().lower()
-    text = re.sub(r"[^a-z0-9]+", " ", text)
-    text = text.strip()
-
     iso3 = str(iso3).strip()
+    return iso3, normalize_port_name(port_name)
 
-    return iso3, text
-
-def build_active_port_lookup(countries, year):
+def build_active_port_lookup(countries, year, nuclear_ports=None):
     """
     Build a dictionary:
         (iso3, normalized port name) -> port dictionary
 
     This is needed to recover coordinates for plotting.
+
+    If nuclear_ports is provided, each port dictionary also receives:
+        nuclear_available_from_year
+        is_nuclear_capable
     """
+
+    if nuclear_ports is None:
+        nuclear_ports = {}
 
     active_ports = get_operating_ports(countries, year)
 
     port_lookup = {}
 
     for port in active_ports:
+        port_name_key = normalize_port_name(port["port_name"])
+
+        nuclear_available_from_year = nuclear_ports.get(port_name_key)
+
+        port["nuclear_available_from_year"] = nuclear_available_from_year
+
+        port["is_nuclear_capable"] = (
+            nuclear_available_from_year is not None
+            and year >= nuclear_available_from_year
+        )
+
         key = normalize_port_key(
             port["port_name"],
             port["iso3"],
@@ -873,11 +924,41 @@ def get_route_ports_from_lookup(route_row, port_lookup):
 
     return port_lookup[start_key], port_lookup[end_key]
 
+def plot_port_marker(ax, port):
+    """
+    Plot a port marker.
+
+    Nuclear-capable ports are shown as a red cross.
+    Other active ports are shown as normal dots.
+    """
+
+    if port.get("is_nuclear_capable", False):
+        ax.scatter(
+            port["longitude"],
+            port["latitude"],
+            marker="x",
+            s=95,
+            color="red",
+            linewidths=2.2,
+            zorder=7,
+        )
+
+    else:
+        ax.scatter(
+            port["longitude"],
+            port["latitude"],
+            s=55,
+            edgecolor="black",
+            linewidth=0.6,
+            zorder=5,
+        )
+
 def plot_routes_for_segment_year(
     allocation_rows,
     countries,
     year,
     segment_name,
+    nuclear_ports=None,
     output_dir=MAP_OUTPUT_DIR,
 ):
     """
@@ -895,7 +976,11 @@ def plot_routes_for_segment_year(
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    port_lookup = build_active_port_lookup(countries, year)
+    port_lookup = build_active_port_lookup( 
+    countries,
+    year,
+    nuclear_ports=nuclear_ports,
+    )
 
     img = mpimg.imread(MAP_INPUT_IMAGE)
 
@@ -953,21 +1038,14 @@ def plot_routes_for_segment_year(
         ] = port_b
 
     for port in plotted_ports.values():
-        ax.scatter(
-            port["longitude"],
-            port["latitude"],
-            s=55,
-            edgecolor="black",
-            linewidth=0.6,
-            zorder=5,
-        )
+        plot_port_marker(ax, port)
 
         ax.text(
             port["longitude"] + 1.2,
             port["latitude"] + 0.8,
             port["port_name"],
             fontsize=7,
-            zorder=6,
+            zorder=8,
         )
 
     ax.set_xlim(-180, 180)
@@ -1016,6 +1094,7 @@ def plot_all_routes_for_year(
     allocation_rows,
     countries,
     year,
+    nuclear_ports=None,
     output_dir=ALLMAP_OUTPUT_DIR,
 ):
     """
@@ -1062,7 +1141,11 @@ def plot_all_routes_for_year(
 
     aggregated_routes = list(routes_by_id.values())
 
-    port_lookup = build_active_port_lookup(countries, year)
+    port_lookup = build_active_port_lookup(
+    countries,
+    year,
+    nuclear_ports=nuclear_ports,
+    )
 
     img = mpimg.imread(MAP_INPUT_IMAGE)
 
@@ -1120,21 +1203,14 @@ def plot_all_routes_for_year(
         ] = port_b
 
     for port in plotted_ports.values():
-        ax.scatter(
-            port["longitude"],
-            port["latitude"],
-            s=55,
-            edgecolor="black",
-            linewidth=0.6,
-            zorder=5,
-        )
+        plot_port_marker(ax, port)
 
         ax.text(
             port["longitude"] + 1.2,
             port["latitude"] + 0.8,
             port["port_name"],
             fontsize=7,
-            zorder=6,
+            zorder=8,
         )
 
     ax.set_xlim(-180, 180)
@@ -1158,6 +1234,7 @@ def build_route_network_over_time(
     countries,
     deployment_file="outputs/deployment_baseline.txt",
     route_file=ROUTE_INPUT_FILE,
+    nuclear_port_file=NUCLEAR_PORT_INPUT_FILE,
     start_year=2035,
     end_year=2060,
     plot_years=None,
@@ -1180,6 +1257,7 @@ def build_route_network_over_time(
     """
 
     routes = load_port_connection_proposals(route_file)
+    nuclear_ports = load_nuclear_capable_ports(nuclear_port_file)
 
     if not all(hasattr(ship, "distance") for ship in ships):
         ships = add_distance_to_ships(ships)
@@ -1278,6 +1356,7 @@ def build_route_network_over_time(
                     countries,
                     year,
                     segment_name,
+                    nuclear_ports=nuclear_ports,
                 )
 
         if year in plot_years:
@@ -1285,6 +1364,7 @@ def build_route_network_over_time(
                 year_network_rows,
                 countries,
                 year,
+                nuclear_ports=nuclear_ports,
             )
 
         all_network_rows.extend(year_network_rows)
@@ -1345,6 +1425,7 @@ def main():
         countries=countries,
         deployment_file=BASELINE_INPUT_FILE,
         route_file=CONECTION_INPUT_FILE,
+        nuclear_port_file=NUCLEAR_PORT_INPUT_FILE,
         start_year=2035,
         end_year=2060,
         plot_years=[2040,2045,2050,2055,2060],
@@ -1369,8 +1450,8 @@ def main():
 if __name__ == "__main__":
     main()
 
-"""        
-plot_segments=[
+"""
+        plot_segments=[
             "Bulk_carrier",
             "Panamax_container",
             "Large_container",
@@ -1382,5 +1463,6 @@ plot_segments=[
             "Fishing_vessels",
             "Large_cruise",
             "Passenger_ferry",
-],
+        ],
 """
+
