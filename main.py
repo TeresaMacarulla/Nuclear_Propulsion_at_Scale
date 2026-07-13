@@ -194,7 +194,7 @@ fuel_needs,infrastructure_needs,fleet,years = deployment("baseline")
 def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,feed_assay = 0.72*1e-2,
                   end_year=2060,phasechange= 7,storeyears = 10,steepness = 1.0,
                   geometric_factor=25,store_container_height = 2.78,
-                  save_deployment=False):
+                  save_deployment=True):
     """
     Plot model outputs over time for a given deployment scenario.
 
@@ -234,8 +234,8 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
                                                              steepness=steepness,geometric_factor=geometric_factor)
     # extract data
     fuel_throughput  = [fuel_needs[i].fuel_throughput for i in range(len(fuel_needs))]
-    swu = [infrastructure_needs[i].swu for i in range(len(fuel_needs))]
     pebble_number  = [fuel_needs[i].pebble_number for i in range(len(fuel_needs))]
+    swu = [infrastructure_needs[i].swu for i in range(len(fuel_needs))]
     feedmass = [infrastructure_needs[i].feedmass for i in range(len(fuel_needs))]
     waste  = [fuel_needs[i].waste for i in range(len(fuel_needs))]
     fresh_store = [infrastructure_needs[i].fresh_store for i in range(len(infrastructure_needs))]
@@ -247,6 +247,18 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     fuelinit_pebbles = [infrastructure_needs[i].fuelinit_pebbles for i in range(len(infrastructure_needs))]
     refueling_pebbles = [infrastructure_needs[i].refueling_pebbles for i in range(len(infrastructure_needs))]
     truckloads_waste = [infrastructure_needs[i].truckloads_waste for i in range(len(infrastructure_needs))]
+
+    # save data in files
+    data_matrix = []
+    data_matrix.append(["year","fuel throughput [tons]","fuel throughput [pebbles]", "seperative work [SWU]", "feedmass [tons]",
+                        "waste [m^3]","fresh fuel storage [m^3]","spent fuel storage [m^3]",
+                          "new ships deployed", "number of refuelings", "initial fuel loading [tons]","refueling [tons]",
+                          "initial fuel loading [pebbles]", "refueling [pebbles]","truckloads of waste transported"])
+    for i in range(len(years)):
+        data_matrix.append([years[i]+2035,fuel_throughput[i],pebble_number[i],swu[i],feedmass[i],waste[i],
+                            fresh_store[i],spent_store[i],fuelinit[i],refuelings[i],fuelinit_tons[i],refueling_tons[i],
+                            fuelinit_pebbles[i],refueling_pebbles[i],truckloads_waste[i]])
+    np.savetxt(f"outputs/{scenario}_global_fuel_infrastructure.txt", data_matrix,fmt='%s',delimiter=';')
 
     # plot fresh fuel throughput
     fig, ax1 = plt.subplots()
@@ -388,14 +400,10 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     plt.savefig(f"plots/{scenario}_fleet.png")
     plt.close()
     return
-plot_scenario("baseline",ships_total=800,end_year=2060,storeyears=5,steepness=0.55,phasechange=7,
-              save_deployment=True,tail_assay=0.4*1e-2) 
-# # Test: Panamax containership with Allseas SMR
-# PoweredPanamaxContainer = init_powered_ship_from_files("inputs/ship/ship_container.txt","inputs/reactor_allseas.txt")
-# # increase number of ships:
-# PoweredPanamaxContainer.set_number(18)
-# fuel_needs,infrastructure_needs = model([PoweredPanamaxContainer])
-# print(f"Fleet requires {fuel_needs.fuel_throughput} tons of fuel and {fuel_needs.swu:e} SWU every {fuel_needs.N_years} years")
-# print(f"Fleet consists of:")
-# for ship_segment in fleet:
-#     print(f"{ship_segment.shipnumber} {ship_segment.shipname} ship(s) with a total of {ship_segment.total_reactornumber} {ship_segment.reactorname} reactors")
+
+def main():
+    plot_scenario("baseline",ships_total=800,end_year=2060,storeyears=5,steepness=0.55,phasechange=7,
+              save_deployment=True,tail_assay=0.4*1e-2)
+    
+if __name__ == "__main__":
+    main()
