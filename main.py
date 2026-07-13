@@ -174,7 +174,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
             spent_store = infrastructure_needs[year-1].spent_store+infrastructure_needs[year-N_years].fresh_store # spent fuel storage = fresh fuel storage at refueling
             if year-N_years-storeyears>=0:# remove spent fuel from storage at certain time interval
                 spent_store-= infrastructure_needs[year-N_years-storeyears].fresh_store
-                truckloads_waste += mass_from_volume(infrastructure_needs[year-N_years-storeyears].fresh_store/geometric_factor,d_pebble,m_U_pebble)/m_truck
+                truckloads_waste += math.ceil(mass_from_volume(infrastructure_needs[year-N_years-storeyears].fresh_store/geometric_factor,d_pebble,m_U_pebble)/m_truck)
         else:
             spent_store = 0.0
             refuelings = 0
