@@ -1,9 +1,10 @@
 name: summer-env
 channels:
   - defaults
-  - conda-forge
+  - conda-pypi
 dependencies:
-  - python=3.14
-  - numpy
   - matplotlib
-prefix: /home/teres/miniconda3/envs/summer-env
+  - numpy
+  - python=3.14
+  - searoute
+prefix: /home/mathiassig/miniconda3/envs/summer-env
