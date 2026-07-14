@@ -189,12 +189,10 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
                                                         _swu,_feedmass))
     return fuel_needs,infrastructure_needs,fleet,years
 
-# Example: load baseline scenario
-fuel_needs,infrastructure_needs,fleet,years = deployment("baseline")
-def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,feed_assay = 0.72*1e-2,
+def run_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,feed_assay = 0.72*1e-2,
                   end_year=2060,phasechange= 7,storeyears = 10,steepness = 1.0,
                   geometric_factor=25,store_container_height = 2.78,
-                  save_deployment=True):
+                  save_deployment=True,save_plots=True,plotting = True):
     """
     Plot model outputs over time for a given deployment scenario.
 
@@ -248,7 +246,16 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
     refueling_pebbles = [infrastructure_needs[i].refueling_pebbles for i in range(len(infrastructure_needs))]
     truckloads_waste = [infrastructure_needs[i].truckloads_waste for i in range(len(infrastructure_needs))]
 
+    fleet_matrix = np.array(fleet)
+    ships_total_over_time = np.zeros(len(fleet_matrix[:,0]))
+
     # save data in files
+    if save_deployment:
+        deployment_matrix = []
+        deployment_matrix.append([fleet_matrix[0,j].shipname for j in range(len(fleet_matrix[0,:]))])
+        for i in range(len(fleet_matrix[:,0])):
+            deployment_matrix.append([str(fleet_matrix[i,j].shipnumber) for j in range(len(fleet_matrix[i,:]))])
+        np.savetxt(f"outputs/deployment_{scenario}.txt", deployment_matrix,fmt='%s')
     data_matrix = []
     data_matrix.append(["year","fuel throughput [tons]","fuel throughput [pebbles]", "seperative work [SWU]", "feedmass [tons]",
                         "waste [m^3]","fresh fuel storage [m^3]","spent fuel storage [m^3]",
@@ -260,150 +267,170 @@ def plot_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fe
                             fuelinit_pebbles[i],refueling_pebbles[i],truckloads_waste[i]])
     np.savetxt(f"outputs/{scenario}_global_fuel_infrastructure.txt", data_matrix,fmt='%s',delimiter=';')
 
-    # plot fresh fuel throughput
-    fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
-    #plt.plot(np.array(years)+2035,np.array(fuel_throughput)/N_years,marker ='o',color='g') # divide by N_years to get yearly value
-    #plt.plot(np.array(years)+2035,np.array(pebble_number)/N_years,marker ='s',color='r') 
-    ax1.plot(np.array(years)+2035,np.array(fuel_throughput),marker ='o',color='g',label="Uranium")
-    ax2.plot(np.array(years)+2035,np.array(pebble_number),marker ='s',color='r',label="TRISO Pebbles")
-    plt.title(f"Fuel throughput per year for a {ships_total} ship fleet \n in {scenario} scenario")
-    #plt.xlabel("Year")
-    #plt.ylabel("tons")
-    ax1.set_xlabel("Year")
-    ax1.set_ylabel("Tons of uranium")
-    ax1.tick_params(axis='y', labelcolor='tab:blue')
-    ax2.set_ylabel("Number of TRISO pebbles")
-    ax2.tick_params(axis='y', labelcolor='tab:red')
-    plt.savefig(f"plots/{scenario}_fuel_throughput.png")
-    plt.close()
+    if plotting:
+        # plot fresh fuel throughput
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+        #plt.plot(np.array(years)+2035,np.array(fuel_throughput)/N_years,marker ='o',color='g') # divide by N_years to get yearly value
+        #plt.plot(np.array(years)+2035,np.array(pebble_number)/N_years,marker ='s',color='r') 
+        ax1.plot(np.array(years)+2035,np.array(fuel_throughput),marker ='o',color='g',label="Uranium")
+        ax2.plot(np.array(years)+2035,np.array(pebble_number),marker ='s',color='r',label="TRISO Pebbles")
+        plt.title(f"Fuel throughput per year for a {ships_total} ship fleet \n in {scenario} scenario")
+        #plt.xlabel("Year")
+        #plt.ylabel("tons")
+        ax1.set_xlabel("Year")
+        ax1.set_ylabel("Tons of uranium")
+        ax1.tick_params(axis='y', labelcolor='tab:blue')
+        ax2.set_ylabel("Number of TRISO pebbles")
+        ax2.tick_params(axis='y', labelcolor='tab:red')
+        if save_plots:
+            plt.savefig(f"plots/{scenario}_fuel_throughput.png")
+        plt.close()
 
-    # plot separative work
-    plt.plot(np.array(years)+2035,np.array(swu)*1e-6,marker='o')
-    plt.title(f"Separative work required per year \n in {scenario} scenario\n natural uranium feed, {tail_assay*1e+2:.2f}% tail assay")
-    plt.xlabel("Year")
-    plt.ylabel("MSWU")
-    plt.tight_layout()
-    plt.savefig(f"plots/{scenario}_swu.png")
-    plt.close()
+        # plot separative work
+        plt.plot(np.array(years)+2035,np.array(swu)*1e-6,marker='o')
+        plt.title(f"Separative work required per year \n in {scenario} scenario\n natural uranium feed, {tail_assay*1e+2:.2f}% tail assay")
+        plt.xlabel("Year")
+        plt.ylabel("MSWU")
+        plt.tight_layout()
+        if save_plots:
+            plt.savefig(f"plots/{scenario}_swu.png")
+        plt.close()
 
-    # plot natural uranium consumption
-    plt.plot(np.array(years)+2035,np.array(feedmass)*1e-3,color='m',marker='s')
-    plt.title(f"Natural uranium required per year \n in {scenario} scenario, {tail_assay*1e+2:.2f}% tail assay")
-    plt.xlabel("Year")
-    plt.ylabel("tons")
-    plt.savefig(f"plots/{scenario}_feedmass.png")
-    plt.close()
+        # plot natural uranium consumption
+        plt.plot(np.array(years)+2035,np.array(feedmass)*1e-3,color='m',marker='s')
+        plt.title(f"Natural uranium required per year \n in {scenario} scenario, {tail_assay*1e+2:.2f}% tail assay")
+        plt.xlabel("Year")
+        plt.ylabel("tons")
+        if save_plots:
+            plt.savefig(f"plots/{scenario}_feedmass.png")
+        plt.close()
 
-    # plot waste volume
-    plt.plot(np.array(years)+2035,np.array(waste),color='m',marker='s') 
-    plt.title(f"Waste production per year \n in {scenario} scenario")
-    plt.xlabel("Year")
-    plt.ylabel(r"Volume [$m^3$]")
-    plt.savefig(f"plots/{scenario}_waste.png")
-    plt.close()
+        # plot waste volume
+        plt.plot(np.array(years)+2035,np.array(waste),color='m',marker='s') 
+        plt.title(f"Waste production per year \n in {scenario} scenario")
+        plt.xlabel("Year")
+        plt.ylabel(r"Volume [$m^3$]")
+        if save_plots:
+            plt.savefig(f"plots/{scenario}_waste.png")
+        plt.close()
 
-    # plot truckloads of waste per year
-    plt.plot(np.array(years)+2035,np.array(truckloads_waste),color='m',marker='s') 
-    plt.title(f"Truckloads of spent fuel moved from interim storage per year\n in {scenario} scenario, {N_years} year refueling interval, {storeyears} year storage")
-    plt.xlabel("Year")
-    plt.ylabel(r"Number of truckloads")
-    plt.savefig(f"plots/{scenario}_truckloads_waste.png")
-    plt.close()
+        # plot truckloads of waste per year
+        plt.plot(np.array(years)+2035,np.array(truckloads_waste),color='m',marker='s') 
+        plt.title(f"Truckloads of spent fuel moved from interim storage per year\n in {scenario} scenario, {N_years} year refueling interval, {storeyears} year storage")
+        plt.xlabel("Year")
+        plt.ylabel(r"Number of truckloads")
+        if save_plots:
+            plt.savefig(f"plots/{scenario}_truckloads_waste.png")
+        plt.close()
 
-    # plot fresh fuel storage needs
-    fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
-    ax1.plot(np.array(years)+2035,np.array(fresh_store),color='m',marker='d')
-    ax2.plot(np.array(years)+2035,np.array(fresh_store)/store_container_height,color='m',marker='d') 
-    plt.title(f"Fresh fuel storage needs per year \n in {scenario} scenario, {N_years} year refueling interval")
-    ax1.set_xlabel("Year")
-    ax1.set_ylabel(r"Volume [$m^3$]")
-    ax1.tick_params(axis='y')#, labelcolor='tab:blue')
-    ax2.set_ylabel(r"Floor space [$m^2$]")
-    ax2.tick_params(axis='y')#, labelcolor='tab:red')
-    fig.tight_layout()
-    plt.savefig(f"plots/{scenario}_fresh_store.png")
-    plt.close()
+        # plot fresh fuel storage needs
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+        ax1.plot(np.array(years)+2035,np.array(fresh_store),color='m',marker='d')
+        ax2.plot(np.array(years)+2035,np.array(fresh_store)/store_container_height,color='m',marker='d') 
+        plt.title(f"Fresh fuel storage needs per year \n in {scenario} scenario, {N_years} year refueling interval")
+        ax1.set_xlabel("Year")
+        ax1.set_ylabel(r"Volume [$m^3$]")
+        ax1.tick_params(axis='y')#, labelcolor='tab:blue')
+        ax2.set_ylabel(r"Floor space [$m^2$]")
+        ax2.tick_params(axis='y')#, labelcolor='tab:red')
+        fig.tight_layout()
+        if save_plots:        
+            plt.savefig(f"plots/{scenario}_fresh_store.png")
+        plt.close()
 
 
-    # plot spent fuel storage needs
-    fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
-    ax1.plot(np.array(years)+2035,np.array(spent_store),color='c',marker='o')
-    ax2.plot(np.array(years)+2035,np.array(spent_store)/store_container_height,color='c',marker='o')
-    plt.title(f"Spent fuel storage needs per year \n in {scenario} scenario, {N_years} year refueling interval, {storeyears} year storage")
-    ax1.set_xlabel("Year")
-    ax1.set_ylabel(r"Volume [$m^3$]")
-    ax1.tick_params(axis='y')#, labelcolor='tab:blue')
-    ax2.set_ylabel(r"Floor space [$m^2$]")
-    ax2.tick_params(axis='y')#, labelcolor='tab:red')
-    fig.tight_layout()
-    plt.savefig(f"plots/{scenario}_spent_store.png")
-    plt.close()
+        # plot spent fuel storage needs
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+        ax1.plot(np.array(years)+2035,np.array(spent_store),color='c',marker='o')
+        ax2.plot(np.array(years)+2035,np.array(spent_store)/store_container_height,color='c',marker='o')
+        plt.title(f"Spent fuel storage needs per year \n in {scenario} scenario, {N_years} year refueling interval, {storeyears} year storage")
+        ax1.set_xlabel("Year")
+        ax1.set_ylabel(r"Volume [$m^3$]")
+        ax1.tick_params(axis='y')#, labelcolor='tab:blue')
+        ax2.set_ylabel(r"Floor space [$m^2$]")
+        ax2.tick_params(axis='y')#, labelcolor='tab:red')
+        fig.tight_layout()
+        if save_plots:
+            plt.savefig(f"plots/{scenario}_spent_store.png")
+        plt.close()
 
-    # Plot ships deployed and ships refueled per year
-    plt.plot(np.array(years)+2035,np.array(fuelinit),label = "Ships deployed",color='c',marker='o') 
-    plt.plot(np.array(years)+2035,np.array(refuelings),label="Ships refueled",color='m',marker='d')
-    plt.plot(np.array(years)+2035,np.array(refuelings)+np.array(fuelinit),label="Total ships serviced",color='y',marker='s')
-    #plt.plot(np.array(years)+2035,(np.array(refuelings)+np.array(fuelinit)).mean()*np.ones(len(years)),label="Mean",color='k',linestyle=':')
-    plt.title(f"Ships deployed and refueled per year\n in {scenario} scenario, {N_years} year refueling interval")
-    plt.xlabel("Year")
-    plt.ylabel(r"Number of ships")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(f"plots/{scenario}_refuelings.png")
-    plt.close()
+        # Plot ships deployed and ships refueled per year
+        plt.plot(np.array(years)+2035,np.array(fuelinit),label = "Ships deployed",color='c',marker='o') 
+        plt.plot(np.array(years)+2035,np.array(refuelings),label="Ships refueled",color='m',marker='d')
+        plt.plot(np.array(years)+2035,np.array(refuelings)+np.array(fuelinit),label="Total ships serviced",color='y',marker='s')
+        #plt.plot(np.array(years)+2035,(np.array(refuelings)+np.array(fuelinit)).mean()*np.ones(len(years)),label="Mean",color='k',linestyle=':')
+        plt.title(f"Ships deployed and refueled per year\n in {scenario} scenario, {N_years} year refueling interval")
+        plt.xlabel("Year")
+        plt.ylabel(r"Number of ships")
+        plt.legend()
+        plt.tight_layout()
+        if save_plots:
+            plt.savefig(f"plots/{scenario}_refuelings.png")
+        plt.close()
 
-    # Plot initial fuel loadings and refueling amounts per year
-    fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
-    #plt.plot(np.array(years)+2035,np.array(fuel_throughput)/N_years,marker ='o',color='g') # divide by N_years to get yearly value
-    #plt.plot(np.array(years)+2035,np.array(pebble_number)/N_years,marker ='s',color='r') 
-    ax1.plot(np.array(years)+2035,np.array(fuelinit_tons),marker ='o',color='g',label="Initial fuel loading")
-    ax1.plot(np.array(years)+2035,np.array(refueling_tons),marker ='s',color='r',label="Refueling")
-    ax1.plot(np.array(years)+2035,np.array(fuelinit_tons)+np.array(refueling_tons),marker ='^',color='k',linestyle='--',label="Total")
-    ax2.plot(np.array(years)+2035,np.array(fuelinit_pebbles),marker ='o',color='g',label="_initial")
-    ax2.plot(np.array(years)+2035,np.array(refueling_pebbles),marker ='s',color='r',label="_refuel")
-    ax2.plot(np.array(years)+2035,np.array(fuelinit_pebbles)+np.array(refueling_pebbles),marker ='^',color='k',linestyle='--',label="_total")
-    plt.title(f"Initial fuel loadings and refuelings per year\n in {scenario} scenario")
-    #plt.xlabel("Year")
-    #plt.ylabel("tons")
-    ax1.set_xlabel("Year")
-    ax1.set_ylabel("Tons of uranium")
-    ax1.tick_params(axis='y')#, labelcolor='tab:blue')
-    ax2.set_ylabel("Number of TRISO pebbles")
-    ax2.tick_params(axis='y')#, labelcolor='tab:red')
-    fig.legend(loc='upper left', bbox_to_anchor=(0.15, 0.8))
-    #fig.tight_layout()
-    plt.savefig(f"plots/{scenario}_refueling_requirements.png")
-    plt.close()
+        # Plot initial fuel loadings and refueling amounts per year
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+        #plt.plot(np.array(years)+2035,np.array(fuel_throughput)/N_years,marker ='o',color='g') # divide by N_years to get yearly value
+        #plt.plot(np.array(years)+2035,np.array(pebble_number)/N_years,marker ='s',color='r') 
+        ax1.plot(np.array(years)+2035,np.array(fuelinit_tons),marker ='o',color='g',label="Initial fuel loading")
+        ax1.plot(np.array(years)+2035,np.array(refueling_tons),marker ='s',color='r',label="Refueling")
+        ax1.plot(np.array(years)+2035,np.array(fuelinit_tons)+np.array(refueling_tons),marker ='^',color='k',linestyle='--',label="Total")
+        ax2.plot(np.array(years)+2035,np.array(fuelinit_pebbles),marker ='o',color='g',label="_initial")
+        ax2.plot(np.array(years)+2035,np.array(refueling_pebbles),marker ='s',color='r',label="_refuel")
+        ax2.plot(np.array(years)+2035,np.array(fuelinit_pebbles)+np.array(refueling_pebbles),marker ='^',color='k',linestyle='--',label="_total")
+        plt.title(f"Initial fuel loadings and refuelings per year\n in {scenario} scenario")
+        #plt.xlabel("Year")
+        #plt.ylabel("tons")
+        ax1.set_xlabel("Year")
+        ax1.set_ylabel("Tons of uranium")
+        ax1.tick_params(axis='y')#, labelcolor='tab:blue')
+        ax2.set_ylabel("Number of TRISO pebbles")
+        ax2.tick_params(axis='y')#, labelcolor='tab:red')
+        fig.legend(loc='upper left', bbox_to_anchor=(0.15, 0.8))
+        #fig.tight_layout()
+        if save_plots:
+            plt.savefig(f"plots/{scenario}_refueling_requirements.png")
+        plt.close()
 
-    # plot number of ships
-    fleet_matrix = np.array(fleet)
-    ships_total_over_time = np.zeros(len(fleet_matrix[:,0]))
-    if save_deployment:
-        deployment_matrix = []
-        deployment_matrix.append([fleet_matrix[0,j].shipname for j in range(len(fleet_matrix[0,:]))])
-        for i in range(len(fleet_matrix[:,0])):
-            deployment_matrix.append([str(fleet_matrix[i,j].shipnumber) for j in range(len(fleet_matrix[i,:]))])
-        np.savetxt(f"outputs/deployment_{scenario}.txt", deployment_matrix,fmt='%s')
-    for j in range(len(fleet_matrix[0,:])):
-        shipnumber = np.array([fleet_matrix[i,j].shipnumber for i in range(len(fleet_matrix[:,j]))])
-        ships_total_over_time += shipnumber
-        plt.plot(np.array(years)+2035,shipnumber,label=fleet_matrix[0,j].shipname)            
-    plt.plot(np.array(years)+2035,ships_total_over_time,label="Total",lw =4,color='k')
-    plt.title(f"Fleet size over time\n in {scenario} scenario")
-    plt.xlabel("Year")
-    plt.ylabel("Number of vessels")
-    plt.legend()
-    plt.savefig(f"plots/{scenario}_fleet.png")
-    plt.close()
+        # plot number of ships
+        for j in range(len(fleet_matrix[0,:])):
+            shipnumber = np.array([fleet_matrix[i,j].shipnumber for i in range(len(fleet_matrix[:,j]))])
+            ships_total_over_time += shipnumber
+            plt.plot(np.array(years)+2035,shipnumber,label=fleet_matrix[0,j].shipname)            
+        plt.plot(np.array(years)+2035,ships_total_over_time,label="Total",lw =4,color='k')
+        plt.title(f"Fleet size over time\n in {scenario} scenario")
+        plt.xlabel("Year")
+        plt.ylabel("Number of vessels")
+        plt.legend()
+        if save_plots:
+            plt.savefig(f"plots/{scenario}_fleet.png")
+        plt.close()
     return
 
 def main():
-    plot_scenario("baseline",ships_total=800,end_year=2060,storeyears=5,steepness=0.55,phasechange=7,
-              save_deployment=True,tail_assay=0.4*1e-2)
+    scenarios = ["baseline","high-burnup","low-burnup","high-enrichment","low-enrichment","4R","7R","4S","10S"]
+    for scenario in scenarios:
+        if scenario == "baseline":
+            run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,steepness=0.55,phasechange=7,
+                      save_deployment=True,tail_assay=0.4*1e-2,plotting=True)
+        elif scenario[0] in ["4","7","10"]:
+            time = int(scenario[0])
+            if scenario[1]=="R":
+                run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=time,steepness=0.55,phasechange=7,
+                            save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
+            elif scenario[1]=="S":
+                run_scenario(scenario,ships_total=800,end_year=2060,storeyears=time,N_years=5,steepness=0.55,phasechange=7,
+                            save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
+            else:
+                print(f"Error: refueling time or storage time change scenario failed, code:{scenario}")
+                break
+        else:
+            run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=5,steepness=0.55,phasechange=7,
+                          save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
     
 if __name__ == "__main__":
     main()
