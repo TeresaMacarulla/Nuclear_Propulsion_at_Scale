@@ -292,7 +292,7 @@ year;ship_segment;route_id;start_port;start_iso3;end_port;end_iso3;route_type;ro
 2052;Ultra_large_container;R024;Port Klang;MYS;Jebel Ali;UAE;middle_east_asia;50.0;6144.0;12288.0;2921;35893248.0;5842.0
 2052;Offshore_vessel;R002;Antwerp-Bruges;BEL;Hamburg;DEU;regional_north_sea;50.0;670.0;1340.0;1;1340.0;2.0
 2052;Offshore_vessel;R076;Murmansk;RUSS;Arkhangelsk;RUSS;arctic_regional;50.0;810.0;1620.0;1;1620.0;2.0
-2052;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2298;7220316.0;4596.0
+2052;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2323;7298866.0;4646.0
 2052;Oil_tanker;R008;Singapore;SIG;Jebel Ali;UAE;middle_east_asia;50.0;6486.0;12972.0;111;1439892.0;222.0
 2052;Oil_tanker;R011;Jebel Ali;UAE;Shanghai;CHI;middle_east_asia;50.0;10574.0;21148.0;1;21148.0;2.0
 2052;Oil_tanker;R012;Jebel Ali;UAE;Algeciras;ESP;med_suez;50.0;9065.0;18130.0;88;1595440.0;176.0
@@ -331,7 +331,7 @@ year;ship_segment;route_id;start_port;start_iso3;end_port;end_iso3;route_type;ro
 2053;Ultra_large_container;R057;Algeciras;ESP;Savannah;USA;transatlantic;50.0;6865.0;13730.0;1853;25441690.0;3706.0
 2053;Offshore_vessel;R002;Antwerp-Bruges;BEL;Hamburg;DEU;regional_north_sea;50.0;670.0;1340.0;1;1340.0;2.0
 2053;Offshore_vessel;R076;Murmansk;RUSS;Arkhangelsk;RUSS;arctic_regional;50.0;810.0;1620.0;1;1620.0;2.0
-2053;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2348;7377416.0;4696.0
+2053;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2398;7534516.0;4796.0
 2053;Oil_tanker;R008;Singapore;SIG;Jebel Ali;UAE;middle_east_asia;50.0;6486.0;12972.0;117;1517724.0;234.0
 2053;Oil_tanker;R011;Jebel Ali;UAE;Shanghai;CHI;middle_east_asia;50.0;10574.0;21148.0;1;21148.0;2.0
 2053;Oil_tanker;R012;Jebel Ali;UAE;Algeciras;ESP;med_suez;50.0;9065.0;18130.0;92;1667960.0;184.0
@@ -372,7 +372,7 @@ year;ship_segment;route_id;start_port;start_iso3;end_port;end_iso3;route_type;ro
 2054;Ultra_large_container;R057;Algeciras;ESP;Savannah;USA;transatlantic;50.0;6865.0;13730.0;1882;25839860.0;3764.0
 2054;Offshore_vessel;R002;Antwerp-Bruges;BEL;Hamburg;DEU;regional_north_sea;50.0;670.0;1340.0;1;1340.0;2.0
 2054;Offshore_vessel;R076;Murmansk;RUSS;Arkhangelsk;RUSS;arctic_regional;50.0;810.0;1620.0;1;1620.0;2.0
-2054;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2423;7613066.0;4846.0
+2054;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2448;7691616.0;4896.0
 2054;Oil_tanker;R008;Singapore;SIG;Jebel Ali;UAE;middle_east_asia;50.0;6486.0;12972.0;117;1517724.0;234.0
 2054;Oil_tanker;R011;Jebel Ali;UAE;Shanghai;CHI;middle_east_asia;50.0;10574.0;21148.0;1;21148.0;2.0
 2054;Oil_tanker;R012;Jebel Ali;UAE;Algeciras;ESP;med_suez;50.0;9065.0;18130.0;92;1667960.0;184.0
@@ -413,7 +413,7 @@ year;ship_segment;route_id;start_port;start_iso3;end_port;end_iso3;route_type;ro
 2055;Ultra_large_container;R057;Algeciras;ESP;Savannah;USA;transatlantic;50.0;6865.0;13730.0;1902;26114460.0;3804.0
 2055;Offshore_vessel;R002;Antwerp-Bruges;BEL;Hamburg;DEU;regional_north_sea;50.0;670.0;1340.0;1;1340.0;2.0
 2055;Offshore_vessel;R076;Murmansk;RUSS;Arkhangelsk;RUSS;arctic_regional;50.0;810.0;1620.0;1;1620.0;2.0
-2055;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2448;7691616.0;4896.0
+2055;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2473;7770166.0;4946.0
 2055;Oil_tanker;R008;Singapore;SIG;Jebel Ali;UAE;middle_east_asia;50.0;6486.0;12972.0;117;1517724.0;234.0
 2055;Oil_tanker;R011;Jebel Ali;UAE;Shanghai;CHI;middle_east_asia;50.0;10574.0;21148.0;1;21148.0;2.0
 2055;Oil_tanker;R012;Jebel Ali;UAE;Algeciras;ESP;med_suez;50.0;9065.0;18130.0;92;1667960.0;184.0
@@ -456,7 +456,7 @@ year;ship_segment;route_id;start_port;start_iso3;end_port;end_iso3;route_type;ro
 2056;Ultra_large_container;R057;Algeciras;ESP;Savannah;USA;transatlantic;50.0;6865.0;13730.0;1910;26224300.0;3820.0
 2056;Offshore_vessel;R002;Antwerp-Bruges;BEL;Hamburg;DEU;regional_north_sea;50.0;670.0;1340.0;1;1340.0;2.0
 2056;Offshore_vessel;R076;Murmansk;RUSS;Arkhangelsk;RUSS;arctic_regional;50.0;810.0;1620.0;1;1620.0;2.0
-2056;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2473;7770166.0;4946.0
+2056;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2498;7848716.0;4996.0
 2056;Oil_tanker;R008;Singapore;SIG;Jebel Ali;UAE;middle_east_asia;50.0;6486.0;12972.0;117;1517724.0;234.0
 2056;Oil_tanker;R011;Jebel Ali;UAE;Shanghai;CHI;middle_east_asia;50.0;10574.0;21148.0;1;21148.0;2.0
 2056;Oil_tanker;R012;Jebel Ali;UAE;Algeciras;ESP;med_suez;50.0;9065.0;18130.0;92;1667960.0;184.0
@@ -500,7 +500,7 @@ year;ship_segment;route_id;start_port;start_iso3;end_port;end_iso3;route_type;ro
 2057;Ultra_large_container;R057;Algeciras;ESP;Savannah;USA;transatlantic;50.0;6865.0;13730.0;1910;26224300.0;3820.0
 2057;Offshore_vessel;R002;Antwerp-Bruges;BEL;Hamburg;DEU;regional_north_sea;50.0;670.0;1340.0;1;1340.0;2.0
 2057;Offshore_vessel;R076;Murmansk;RUSS;Arkhangelsk;RUSS;arctic_regional;50.0;810.0;1620.0;1;1620.0;2.0
-2057;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2473;7770166.0;4946.0
+2057;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2498;7848716.0;4996.0
 2057;Oil_tanker;R008;Singapore;SIG;Jebel Ali;UAE;middle_east_asia;50.0;6486.0;12972.0;1;12972.0;2.0
 2057;Oil_tanker;R011;Jebel Ali;UAE;Shanghai;CHI;middle_east_asia;50.0;10574.0;21148.0;1;21148.0;2.0
 2057;Oil_tanker;R012;Jebel Ali;UAE;Algeciras;ESP;med_suez;50.0;9065.0;18130.0;21;380730.0;42.0
@@ -545,7 +545,7 @@ year;ship_segment;route_id;start_port;start_iso3;end_port;end_iso3;route_type;ro
 2058;Ultra_large_container;R057;Algeciras;ESP;Savannah;USA;transatlantic;50.0;6865.0;13730.0;1931;26512630.0;3862.0
 2058;Offshore_vessel;R002;Antwerp-Bruges;BEL;Hamburg;DEU;regional_north_sea;50.0;670.0;1340.0;1;1340.0;2.0
 2058;Offshore_vessel;R076;Murmansk;RUSS;Arkhangelsk;RUSS;arctic_regional;50.0;810.0;1620.0;1;1620.0;2.0
-2058;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2473;7770166.0;4946.0
+2058;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2498;7848716.0;4996.0
 2058;Oil_tanker;R008;Singapore;SIG;Jebel Ali;UAE;middle_east_asia;50.0;6486.0;12972.0;1;12972.0;2.0
 2058;Oil_tanker;R011;Jebel Ali;UAE;Shanghai;CHI;middle_east_asia;50.0;10574.0;21148.0;1;21148.0;2.0
 2058;Oil_tanker;R012;Jebel Ali;UAE;Algeciras;ESP;med_suez;50.0;9065.0;18130.0;22;398860.0;44.0
@@ -590,7 +590,7 @@ year;ship_segment;route_id;start_port;start_iso3;end_port;end_iso3;route_type;ro
 2059;Ultra_large_container;R057;Algeciras;ESP;Savannah;USA;transatlantic;50.0;6865.0;13730.0;1931;26512630.0;3862.0
 2059;Offshore_vessel;R002;Antwerp-Bruges;BEL;Hamburg;DEU;regional_north_sea;50.0;670.0;1340.0;1;1340.0;2.0
 2059;Offshore_vessel;R076;Murmansk;RUSS;Arkhangelsk;RUSS;arctic_regional;50.0;810.0;1620.0;1;1620.0;2.0
-2059;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2498;7848716.0;4996.0
+2059;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2523;7927266.0;5046.0
 2059;Oil_tanker;R008;Singapore;SIG;Jebel Ali;UAE;middle_east_asia;50.0;6486.0;12972.0;1;12972.0;2.0
 2059;Oil_tanker;R011;Jebel Ali;UAE;Shanghai;CHI;middle_east_asia;50.0;10574.0;21148.0;1;21148.0;2.0
 2059;Oil_tanker;R012;Jebel Ali;UAE;Algeciras;ESP;med_suez;50.0;9065.0;18130.0;22;398860.0;44.0
@@ -635,7 +635,7 @@ year;ship_segment;route_id;start_port;start_iso3;end_port;end_iso3;route_type;ro
 2060;Ultra_large_container;R057;Algeciras;ESP;Savannah;USA;transatlantic;50.0;6865.0;13730.0;1931;26512630.0;3862.0
 2060;Offshore_vessel;R002;Antwerp-Bruges;BEL;Hamburg;DEU;regional_north_sea;50.0;670.0;1340.0;1;1340.0;2.0
 2060;Offshore_vessel;R076;Murmansk;RUSS;Arkhangelsk;RUSS;arctic_regional;50.0;810.0;1620.0;1;1620.0;2.0
-2060;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2498;7848716.0;4996.0
+2060;Offshore_vessel;R079;Tromsø;NOR;Bergen;NOR;arctic_regional;50.0;1571.0;3142.0;2523;7927266.0;5046.0
 2060;Oil_tanker;R008;Singapore;SIG;Jebel Ali;UAE;middle_east_asia;50.0;6486.0;12972.0;1;12972.0;2.0
 2060;Oil_tanker;R011;Jebel Ali;UAE;Shanghai;CHI;middle_east_asia;50.0;10574.0;21148.0;1;21148.0;2.0
 2060;Oil_tanker;R012;Jebel Ali;UAE;Algeciras;ESP;med_suez;50.0;9065.0;18130.0;22;398860.0;44.0

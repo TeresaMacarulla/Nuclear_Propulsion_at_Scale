@@ -1428,7 +1428,7 @@ def main():
         nuclear_port_file=NUCLEAR_PORT_INPUT_FILE,
         start_year=2035,
         end_year=2060,
-        plot_years=[2040,2045,2050,2055,2060],
+        plot_years=[2050,2051,2052,2053,2054,2055],
         plot_segments=[
             "Bulk_carrier",
             "Panamax_container",

@@ -3,7 +3,7 @@ Allocate global fleet fuel-infrastructure requirements to nuclear-capable ports.
 
 Inputs
 ------
-1. baseline_global_fuel_infrastructure.txt
+1. *_infrastructure.txt
    Global yearly fleet demands: fuel throughput, fresh/spent storage,
    refuellings, new ship loadings, truckloads, etc.
 
