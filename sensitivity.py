@@ -59,11 +59,11 @@ def tornadoplot(low_values,high_values,base_value,value_label,variables = ['Reac
     fig, ax = plt.subplots(figsize=(8, 5))
 
     # Draw the low and high impact bars using the 'left' parameter
-    bar_low = ax.barh(variables, low_widths, left=base_value, color='#3182bd', label='Low Estimate')
-    bar_high = ax.barh(variables, high_widths, left=base_value, color='#de2d26', label='High Estimate')
+    bar_low = ax.barh(variables, low_widths, left=base_value, color='#0072B2', label='Low Estimate')
+    bar_high = ax.barh(variables, high_widths, left=base_value, color='#D55E00', label='High Estimate')
 
     # Add a vertical baseline
-    ax.axvline(base_value, color='black', linestyle='--', linewidth=1.5)
+    ax.axvline(base_value, color='black', linestyle='--', linewidth=1.5,label="Baseline")
 
     # Formatting
     ax.set_title(f'Sensitivity analysis of {value_label[0]}', fontsize=14, pad=15)

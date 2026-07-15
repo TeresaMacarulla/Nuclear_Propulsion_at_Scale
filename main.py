@@ -417,17 +417,29 @@ def main():
         if scenario == "baseline":
             run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,steepness=0.55,phasechange=7,
                       save_deployment=True,tail_assay=0.4*1e-2,plotting=True)
-        elif scenario[0] in ["4","7","10"]:
-            time = int(scenario[0])
-            if scenario[1]=="R":
-                run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=time,steepness=0.55,phasechange=7,
-                            save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
-            elif scenario[1]=="S":
-                run_scenario(scenario,ships_total=800,end_year=2060,storeyears=time,N_years=5,steepness=0.55,phasechange=7,
-                            save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
+        elif (scenario[0] in ["4","7"]) or (scenario[0:2]=="10"):
+            if scenario[0:2] == "10":
+                time = int(scenario[0:2])
+                if scenario[2]=="R":
+                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=time,steepness=0.55,phasechange=7,
+                                save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
+                elif scenario[2]=="S":
+                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=time,N_years=5,steepness=0.55,phasechange=7,
+                                save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
+                else:
+                    print(f"Error: refueling time or storage time change scenario failed, code:{scenario}")
+                    break
             else:
-                print(f"Error: refueling time or storage time change scenario failed, code:{scenario}")
-                break
+                time = int(scenario[0])
+                if scenario[1]=="R":
+                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=time,steepness=0.55,phasechange=7,
+                                save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
+                elif scenario[1]=="S":
+                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=time,N_years=5,steepness=0.55,phasechange=7,
+                                save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
+                else:
+                    print(f"Error: refueling time or storage time change scenario failed, code:{scenario}")
+                    break
         else:
             run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=5,steepness=0.55,phasechange=7,
                           save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
