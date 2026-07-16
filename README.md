@@ -175,7 +175,6 @@ These outputs are used to analyse how the global fuel-cycle burden is distribute
 The most relevant input files for the maritime model are:
 
 ```text
-inputs/country/all_countries.txt
 inputs/country/country_*.txt
 inputs/ship/ship_*.txt
 inputs/port_connection_proposals.txt
@@ -222,8 +221,6 @@ The port-service hub allocation can be run with:
 ```bash
 python port_service_hub_allocation.py
 ```
-
-The reactor and fuel-cycle scripts should be documented separately.
 
 ---
 
