@@ -113,7 +113,65 @@ outputs/maritime/routes_by_segment/
 ```
 
 ---
+## Global fuel and infrastructure needs model
+The global fuel and infrastructure part of the project is mainly implemented in:
 
+```text
+reactor.py
+ship.py
+utilities.py
+outputs.py
+main.py
+```
+
+### `reactor.py`
+
+This file contains the Reactor class.
+Each instance is defined by reactor power, fuel burnup, fuel enrichment, and reactor name.
+
+### `ship.py`
+
+This file contains the Ship and PoweredShip classes. 
+An instance of the Ship class is defined by installed power,propulsion power,auxiliary power, average speed,
+operational time, number of portcalls per year, and a ship segment name.
+
+The PoweredShip class inherits from the Ship, Reactor and Country classes, but running the Country initialiser is optional.
+Additionally, it contains the number of ships and reactors. The class describes a combination between a ship segment and a reactor type. The number of vessels with this combination can be adjusted after initialization.
+
+### `utilities.py`
+
+This file includes functions relevant for performing the model calculations for fuel requirements, for converting between different quantities, and for initialising class instances from input files.
+
+### `outputs.py`
+
+This file contains the FuelNeeds and InfrastructureNeeds classes. These are used for storing and grouping model outputs for a given year.
+
+### `main.py`
+
+This script calculates the global fuel and infrastructure needs for different scenarios. A scenario is defined by a list of ship segments, each ship segment's share of the total fleet, reactor name, country name (deprecated; PoweredShip can initialize without country name), and deployment phase. There are two deployment phases. Either a ship segment starts deployment in 2035, i.e. phase 1, or it is delayed by a given number of years in phase 2. All model outputs for a given scenario are output as a textfile. The baseline outputs are also plotted and saved in the plots folder. The fleet deployment history is also output to a textfile.
+
+It uses the following main inputs:
+
+```text
+inputs/ship/ship_*.txt
+inputs/reactor_*.txt
+inputs/scenario/scenario_*.txt
+inputs/country/country_*.txt (optional)
+
+```
+
+The calculations are described by the functions model() and deployment(). The model() function calculates the fuel related requirements for the fleet in a given year by iterating over a list of PoweredShip instances which describes the fleet for that year. The deployment() function updates the number of fleets in the ship using a sum of sigmoid functions, and then passes the updated fleet composition to the model() to get the fuel related outputs for each year. This function also calculates the infrastructure related outputs, along with fuel related outputs which depend on model() outputs from previous years. 
+
+The results are written to file and plotted by the run_scenario() function.
+
+Important generated files include:
+
+```text
+outputs/deployment_baseline.txt
+outputs/*_global_fuel_infrastructure.txt
+plots/baseline_*.png
+```
+---
 ## Nuclear port-service hub allocation
 
 The port-service part of the project is implemented in:
@@ -200,7 +258,27 @@ outputs/port_service_hubs/*.pdf
 ```
 
 ---
+## Sensitivity analysis
 
+The sensitivity analysis is handled by the following file:
+```text
+sensitivity.py
+```
+### `sensitivity.py`
+
+This script performs the sensitivity analysis by reading outputs from different scenarios simulated by the main.py script. These are plotted in tornado plots. This program is hardcoded to study the following varying inputs: refueling interval, spent fuel storage time, burnup, and enrichment. It is similarly hardcoded to study how these inputs affect the following peak global outputs: total fueling requirements per year, separative work needed per year, total storage needs, truckloads needing transport per year.
+
+It uses the following inputs:
+```text
+outputs/*_global_fuel_infrastructure.txt
+```
+
+It produces the following outputs:
+
+```text
+outputs/sensitivity_*.png
+```
+---
 ## How to run
 
 The environment can be created from:
