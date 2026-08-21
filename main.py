@@ -95,7 +95,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
     List of floats
         Years after 2035.
     """
-    def two_phase_deployment(ships_end,phase,year,phasechange,end_year,steepness=1.0):
+    def two_phase_deployment(ships_end,phase,year,phasechange,end_year,steepness):
         """
         Calculate the number of ships in a segment for a year after 2035.
 
@@ -118,12 +118,13 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
         int
             Number of ships of this segment at year {year} after 2035.
         """
+    
         if phase == 1:
-            K1 = ships_end
+            K1 = ships_end*(1+np.exp(-steepness*((end_year-2035)-(end_year-2035)/2))) # add normalization factor to ensure fleet size in end_year is correct
             K2 = 0
         elif phase == 2:
             K1 = 0
-            K2 = ships_end
+            K2 = ships_end*(1+np.exp(-steepness*((end_year-2035)-(end_year-2035+phasechange)/2))) # different normalization for phase 2
         return round(K1*sigmoid(year,steepness,(end_year-2035)/2)+K2*sigmoid(year,steepness,(end_year-2035+phasechange)/2))
     years = [i for i in range(end_year-2035+1+N_years+storeyears)]# years after 2035, goes until end_year + N_years+storeyears
     fleet_shares = np.loadtxt(f"inputs/scenario/scenario_{scenario}.txt",delimiter=';',dtype=str)
@@ -136,7 +137,7 @@ def deployment(scenario,ships_total = 600,N_years = 5,tail_assay=0.4*1e-2,feed_a
             fleet_i = []
             ships_in_fleet_i = 0
             for j in range(1,len(fleet_shares[:,0])): # loop over ship segments
-                shipnumber= two_phase_deployment(fleet_shares[j,1].astype(float)*1e-2*ships_total,
+                shipnumber= two_phase_deployment(round(fleet_shares[j,1].astype(float)*1e-2*ships_total),
                                                                                         fleet_shares[j,4].astype(int),
                                                                                         year,
                                                                                         phasechange=phasechange,
@@ -431,18 +432,19 @@ def run_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fee
 
 def main():
     scenarios = ["baseline","high-burnup","low-burnup","high-enrichment","low-enrichment","4R","7R","4S","10S","high","low"]
+    steepness = 0.25 # set steepness of sigmoid deployment curve
     for scenario in scenarios:
         if scenario == "baseline":
-            run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,steepness=0.55,phasechange=7,
+            run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,steepness=steepness,phasechange=7,
                       save_deployment=True,tail_assay=0.4*1e-2,plotting=True)
         elif (scenario[0] in ["4","7"]) or (scenario[0:2]=="10"):
             if scenario[0:2] == "10":
                 time = int(scenario[0:2])
                 if scenario[2]=="R":
-                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=time,steepness=0.55,phasechange=7,
+                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=time,steepness=steepness,phasechange=7,
                                 save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
                 elif scenario[2]=="S":
-                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=time,N_years=5,steepness=0.55,phasechange=7,
+                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=time,N_years=5,steepness=steepness,phasechange=7,
                                 save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
                 else:
                     print(f"Error: refueling time or storage time change scenario failed, code:{scenario}")
@@ -450,23 +452,23 @@ def main():
             else:
                 time = int(scenario[0])
                 if scenario[1]=="R":
-                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=time,steepness=0.55,phasechange=7,
+                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=time,steepness=steepness,phasechange=7,
                                 save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
                 elif scenario[1]=="S":
-                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=time,N_years=5,steepness=0.55,phasechange=7,
+                    run_scenario(scenario,ships_total=800,end_year=2060,storeyears=time,N_years=5,steepness=steepness,phasechange=7,
                                 save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
                 else:
                     print(f"Error: refueling time or storage time change scenario failed, code:{scenario}")
                     break
         # scenarios with combined high and low refueling interval, burnup and enrichment
         elif scenario == "high":
-            run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=7,steepness=0.55,phasechange=7,
+            run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=7,steepness=steepness,phasechange=7,
                                 save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
         elif scenario == "low":
-            run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=4,steepness=0.55,phasechange=7,
+            run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=4,steepness=steepness,phasechange=7,
                                 save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
         else:
-            run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=5,steepness=0.55,phasechange=7,
+            run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,N_years=5,steepness=steepness,phasechange=7,
                           save_deployment=False,tail_assay=0.4*1e-2,plotting=False)
     
 if __name__ == "__main__":
