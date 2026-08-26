@@ -432,7 +432,7 @@ def run_scenario(scenario,ships_total = 600,N_years = 5,tail_assay=0.55*1e-2,fee
 
 def main():
     scenarios = ["baseline","high-burnup","low-burnup","high-enrichment","low-enrichment","4R","7R","4S","10S","high","low"]
-    steepness = 0.25 # set steepness of sigmoid deployment curve
+    steepness = 0.32 # set steepness of sigmoid deployment curve
     for scenario in scenarios:
         if scenario == "baseline":
             run_scenario(scenario,ships_total=800,end_year=2060,storeyears=5,steepness=steepness,phasechange=7,
