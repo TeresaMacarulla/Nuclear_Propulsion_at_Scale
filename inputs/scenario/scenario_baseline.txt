@@ -9,4 +9,4 @@ m_icebreaker;3.0;allseas;united_kingdom;1
 l_icebreaker;3.0;allseas;united_kingdom;1
 fishing;2.1;allseas;united_kingdom;2
 cruise;5.0;allseas;united_kingdom;2
-ferry;5.0;allseas;united_kingdom;2
+ferry;2.5;allseas;united_kingdom;2

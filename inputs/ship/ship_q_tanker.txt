@@ -1,0 +1,2 @@
+name;installed_P[MWe];propulsion[MWe];auxiliary[MWe];avg_speed[knots];op_time[h];portcalls
+Chemical_tanker;25;5.9;1.35;14;5500;40

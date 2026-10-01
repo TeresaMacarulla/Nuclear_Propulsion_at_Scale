@@ -379,11 +379,7 @@ def add_distance_to_ships(ships):
 
     return ships_with_distance
 
-def get_ship_numbers_for_year(
-    deployment_file,
-    year,
-    start_year=2035,
-):
+def get_ship_numbers_for_year(deployment_file, year, start_year=2035,):
     """
     Read deployment_baseline.txt and return the number of ships
     of each segment in the selected year.

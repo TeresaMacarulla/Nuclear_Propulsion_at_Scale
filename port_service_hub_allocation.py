@@ -3,20 +3,20 @@ Allocate global fleet fuel-infrastructure requirements to nuclear-capable ports.
 
 Inputs
 ------
-1. *_infrastructure.txt
+1. outputs/port_service_hubs/baseline_global_fuel_infrastructure.txt
    Global yearly fleet demands: fuel throughput, fresh/spent storage,
    refuellings, new ship loadings, truckloads, etc.
 
-2. nuclear_capable_ports.txt
+2. inputs/nuclear_capable_ports.txt
    Nuclear-capable port activation years:
    port_name;nuclear_available_from_year
 
 Outputs
 -------
-1. nuclear_port_service_summary_by_year.txt
+1. outputs/port_service_hubs/nuclear_port_service_summary_by_year.txt
    One row per year with global demand and average demand per active port.
 
-2. nuclear_port_service_allocation_by_year.txt
+2. outputs/port_service_hubs/nuclear_port_service_allocation_by_year.txt
    One row per active port and year with allocated refuellings, storage,
    fuel throughput and truckloads.
 
@@ -25,7 +25,7 @@ Method
 For each year, only ports with nuclear_available_from_year <= year are active.
 Global demand is distributed across active ports using normalized weights.
 
-By default all ports have the same nominal weight, but a maturity factor is used:
+A maturity factor is used for the ports:
 newly activated ports start at 50% of full capacity, reach 75% in the following
 year, and full capacity from the third year onward. The normalized shares still
 sum to 1, so the full global yearly demand is allocated.
@@ -47,7 +47,7 @@ DEFAULT_OUTPUT_DIR = Path("outputs") / "port_service_hubs"
 
 # Optional future extension:
 # Give some ports higher or lower nominal capacity if justified later.
-# For the baseline, leave all ports equal.
+
 PORT_WEIGHTS = {
     "Rotterdam": 1.30,
     "Singapore": 1.35,
