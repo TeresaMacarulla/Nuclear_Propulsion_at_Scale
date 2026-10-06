@@ -37,7 +37,7 @@ def model(powered_ships,
     reactor_number_fleet = 0 # number of reactors in fleet
     for powered_ship in powered_ships: # iterate over ship segments
         # The following returns masses/SWUs needed per year. Must multiply by N_years to get per refueling
-        fuelmass  = fuelmass_from_burnup(powered_ship.power,powered_ship.op_time/24,powered_ship.burnup)*powered_ship.total_reactornumber
+        fuelmass  = fuelmass_from_burnup(powered_ship.propulsion+powered_ship.auxiliary,powered_ship.op_time/24,powered_ship.burnup)*powered_ship.shipnumber
         fuel_throughput += fuelmass
         swu  += SW(fuelmass*1e+3,powered_ship.enrichment*1e-2,tail_assay,feed_assay)
         _feedmass += feedmass(fuelmass,powered_ship.enrichment*1e-2,tail_assay,feed_assay)
