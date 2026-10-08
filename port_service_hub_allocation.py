@@ -576,38 +576,57 @@ def plot_port_service_hub_results(
     # ------------------------------------------------------------
     # Plot 2: average refuelling burden per active port
     # ------------------------------------------------------------
-    fig, ax = plt.subplots(figsize=(11, 6))
+    fig, ax = plt.subplots(figsize=(14, 6))
 
-    ax.plot(
-        years,
-        [
-            to_float(row["average_refuellings_per_active_port"])
-            for row in summary_rows
-        ],
-        marker="o",
-        linewidth=2,
+    x_positions = list(range(len(years)))
+    bar_width = 0.40
+
+    avg_refuellings = [
+        to_float(row["average_refuellings_per_active_port"])
+        for row in summary_rows
+    ]
+
+    avg_service_events = [
+        to_float(row["average_service_events_per_active_port"])
+        for row in summary_rows
+    ]
+
+    ax.bar(
+        [x - bar_width / 2 for x in x_positions],
+        avg_refuellings,
+        width=bar_width,
         label="Average refuellings per active port",
     )
 
-    ax.plot(
-        years,
-        [
-            to_float(row["average_service_events_per_active_port"])
-            for row in summary_rows
-        ],
-        marker="s",
-        linewidth=2,
+    ax.bar(
+        [x + bar_width / 2 for x in x_positions],
+        avg_service_events,
+        width=bar_width,
         label="Average total service events per active port",
     )
 
-    ax.set_xlabel("Year",fontsize=18)
-    ax.set_ylabel("Events per active port per year",fontsize=18)
-    ax.set_title("Average nuclear service burden per active port",fontsize=18)
-    ax.grid(True, alpha=0.3)
-    ax.legend(fontsize=16)
-    ax.tick_params(axis="both", labelsize=18)
+    # Show only selected year labels to avoid overcrowding
+    tick_indices = [
+        i for i, year in enumerate(years)
+        if year % 5 == 0
+    ]
 
-    output_file = plot_dir / f"avg_service_events_per_active_port_{selected_year}.pdf" 
+    ax.set_xticks(tick_indices)
+    ax.set_xticklabels(
+        [years[i] for i in tick_indices],
+        fontsize=18
+    )
+
+    ax.set_xlabel("Year", fontsize=18)
+    ax.set_ylabel("Events per active port per year", fontsize=18)
+    ax.set_title("Average nuclear service burden per active port", fontsize=18)
+
+    ax.grid(True, axis="y", alpha=0.3)
+    ax.legend(fontsize=16)
+    ax.tick_params(axis="y", labelsize=18)
+
+    output_file = plot_dir / f"avg_service_events_per_active_port_{selected_year}.pdf"
+
     plt.tight_layout()
     plt.savefig(output_file, dpi=300)
     plt.close(fig)
@@ -616,38 +635,63 @@ def plot_port_service_hub_results(
     # ------------------------------------------------------------
     # Plot 3: average fresh and spent fuel storage burden per port
     # ------------------------------------------------------------
-    fig, ax = plt.subplots(figsize=(11, 6))
+    fig, ax = plt.subplots(figsize=(14, 6))
 
-    ax.plot(
-        years,
-        [
-            to_float(row["average_fresh_storage_m3_per_active_port"])
-            for row in summary_rows
-        ],
-        marker="o",
-        linewidth=2,
+    x_positions = list(range(len(years)))
+    bar_width = 0.40
+
+    avg_fresh_storage = [
+        to_float(row["average_fresh_storage_m3_per_active_port"])
+        for row in summary_rows
+    ]
+
+    avg_spent_storage = [
+        to_float(row["average_spent_storage_m3_per_active_port"])
+        for row in summary_rows
+    ]
+
+    ax.bar(
+        [x - bar_width / 2 for x in x_positions],
+        avg_fresh_storage,
+        width=bar_width,
         label="Fresh fuel storage",
     )
 
-    ax.plot(
-        years,
-        [
-            to_float(row["average_spent_storage_m3_per_active_port"])
-            for row in summary_rows
-        ],
-        marker="s",
-        linewidth=2,
+    ax.bar(
+        [x + bar_width / 2 for x in x_positions],
+        avg_spent_storage,
+        width=bar_width,
         label="Spent fuel storage",
     )
 
-    ax.set_xlabel("Year",fontsize=18)
-    ax.set_ylabel("Average storage volume per active port [m$^3$]",fontsize=18)
-    ax.set_title("Average fuel-storage burden per active port",fontsize=18)
-    ax.grid(True, alpha=0.3)
+    # Show only selected year labels to avoid overcrowding
+    tick_indices = [
+        i for i, year in enumerate(years)
+        if year % 5 == 0
+    ]
+
+    ax.set_xticks(tick_indices)
+    ax.set_xticklabels(
+        [years[i] for i in tick_indices],
+        fontsize=18
+    )
+
+    ax.set_xlabel("Year", fontsize=18)
+    ax.set_ylabel(
+        "Average storage volume per active port [m$^3$]",
+        fontsize=18
+    )
+    ax.set_title(
+        "Average fuel-storage burden per active port",
+        fontsize=18
+    )
+
+    ax.grid(True, axis="y", alpha=0.3)
     ax.legend(fontsize=16)
-    ax.tick_params(axis="both", labelsize=18)
+    ax.tick_params(axis="y", labelsize=18)
 
     output_file = plot_dir / f"avg_storage_per_active_port_{selected_year}.pdf"
+
     plt.tight_layout()
     plt.savefig(output_file, dpi=300)
     plt.close(fig)
